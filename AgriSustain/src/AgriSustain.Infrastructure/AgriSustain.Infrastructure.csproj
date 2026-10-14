@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\AgriSustain.Application\AgriSustain.Application.csproj" />
+    <ProjectReference Include="..\AgriSustain.Domain\AgriSustain.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Persistence\Contexts\" />
+    <Folder Include="Persistence\Configurations\" />
+    <Folder Include="Persistence\Migrations\" />
+    <Folder Include="Persistence\Repositories\" />
+    <Folder Include="Persistence\Transactions\" />
+    <Folder Include="Adapters\Payments\PayOS\" />
+    <Folder Include="Adapters\Email\Gmail\" />
+    <Folder Include="Adapters\Media\FileStorage\" />
+    <Folder Include="OperationalServices\Auditing\" />
+    <Folder Include="OperationalServices\Logging\" />
+    <Folder Include="OperationalServices\Configuration\" />
+    <Folder Include="OperationalServices\UploadValidation\" />
+    <Folder Include="OperationalServices\Caching\" />
+    <Folder Include="OperationalServices\Identity\" />
+    <Folder Include="HostedBackgroundWorkers\Payments\" />
+    <Folder Include="HostedBackgroundWorkers\Orders\" />
+    <Folder Include="HostedBackgroundWorkers\Notifications\" />
+    <Folder Include="HostedBackgroundWorkers\Compliance\" />
+    <Folder Include="HostedBackgroundWorkers\Maintenance\" />
+    <Folder Include="DependencyInjection\" />
+  </ItemGroup>
+</Project>

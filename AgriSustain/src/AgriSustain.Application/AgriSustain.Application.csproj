@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\AgriSustain.Domain\AgriSustain.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UseCases\" />
+    <Folder Include="UseCases\Authentication\" />
+    <Folder Include="UseCases\Profiles\" />
+    <Folder Include="UseCases\Marketplace\" />
+    <Folder Include="UseCases\Orders\" />
+    <Folder Include="UseCases\Farming\" />
+    <Folder Include="UseCases\Traceability\" />
+    <Folder Include="UseCases\Contracts\" />
+    <Folder Include="UseCases\Subscriptions\" />
+    <Folder Include="UseCases\PriceBenchmarks\" />
+    <Folder Include="UseCases\Verification\" />
+    <Folder Include="UseCases\Moderation\" />
+    <Folder Include="UseCases\Promotions\" />
+    <Folder Include="UseCases\Disputes\" />
+    <Folder Include="UseCases\Finance\" />
+    <Folder Include="Ports\Repositories\" />
+    <Folder Include="Ports\Persistence\" />
+    <Folder Include="Ports\Payments\" />
+    <Folder Include="Ports\Email\" />
+    <Folder Include="Ports\Media\" />
+    <Folder Include="Ports\Auditing\" />
+    <Folder Include="Ports\Caching\" />
+    <Folder Include="Ports\Identity\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="DTOs\Authentication\" />
+    <Folder Include="DTOs\Profiles\" />
+    <Folder Include="DTOs\Marketplace\" />
+    <Folder Include="DTOs\Orders\" />
+    <Folder Include="DTOs\Farming\" />
+    <Folder Include="DTOs\Traceability\" />
+    <Folder Include="DTOs\Contracts\" />
+    <Folder Include="DTOs\Subscriptions\" />
+    <Folder Include="DTOs\PriceBenchmarks\" />
+    <Folder Include="DTOs\Verification\" />
+    <Folder Include="DTOs\Moderation\" />
+    <Folder Include="DTOs\Promotions\" />
+    <Folder Include="DTOs\Disputes\" />
+    <Folder Include="DTOs\Finance\" />
+    <Folder Include="Validation\" />
+    <Folder Include="Validation\Authentication\" />
+    <Folder Include="Validation\Profiles\" />
+    <Folder Include="Validation\Marketplace\" />
+    <Folder Include="Validation\Orders\" />
+    <Folder Include="Validation\Farming\" />
+    <Folder Include="Validation\Traceability\" />
+    <Folder Include="Validation\Contracts\" />
+    <Folder Include="Validation\Subscriptions\" />
+    <Folder Include="Validation\PriceBenchmarks\" />
+    <Folder Include="Validation\Verification\" />
+    <Folder Include="Validation\Moderation\" />
+    <Folder Include="Validation\Promotions\" />
+    <Folder Include="Validation\Disputes\" />
+    <Folder Include="Validation\Finance\" />
+    <Folder Include="Common\" />
+  </ItemGroup>
+</Project>

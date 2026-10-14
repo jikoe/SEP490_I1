@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\AgriSustain.Application\AgriSustain.Application.csproj" />
+    <ProjectReference Include="..\AgriSustain.Infrastructure\AgriSustain.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+    <Folder Include="Security\Authentication\" />
+    <Folder Include="Security\Authorization\Handlers\" />
+    <Folder Include="Security\Authorization\Requirements\" />
+    <Folder Include="Security\Policies\" />
+    <Folder Include="RequestPipeline\Middleware\" />
+    <Folder Include="RequestPipeline\Filters\" />
+    <Folder Include="CompositionRoot\" />
+    <Folder Include="Properties\" />
+  </ItemGroup>
+</Project>
