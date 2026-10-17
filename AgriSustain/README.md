@@ -1,44 +1,21 @@
 # AgriSustain Code Structure
 
-Bộ khung code theo package diagram trong Report 4, sử dụng ASP.NET Core Web API 8.0, React 19.1.0 và SQL Server như Report 1–2.
+Bộ khung ASP.NET Core Web API 8.0 được tổ chức theo package diagram mới nhất đã chốt trong Report 4. Solution giữ 4 project backend, với 18 package nghiệp vụ/kỹ thuật bên trong.
 
-```text
-AgriSustain/
-├── AgriSustain.sln
-├── src/
-│   ├── AgriSustain.Api/
-│   │   ├── Controllers/
-│   │   ├── Security/
-│   │   ├── RequestPipeline/
-│   │   ├── CompositionRoot/
-│   │   └── Program.cs
-│   ├── AgriSustain.Application/
-│   │   ├── UseCases/{Feature}/
-│   │   ├── Ports/
-│   │   ├── DTOs/{Feature}/
-│   │   └── Validation/{Feature}/
-│   ├── AgriSustain.Domain/
-│   │   ├── Entities/
-│   │   ├── ValueObjects/
-│   │   ├── Rules/
-│   │   ├── Services/
-│   │   ├── Types/
-│   │   └── Events/
-│   └── AgriSustain.Infrastructure/
-│       ├── Persistence/
-│       ├── Adapters/
-│       ├── OperationalServices/
-│       ├── HostedBackgroundWorkers/
-│       └── DependencyInjection/
-├── frontend/
-│   └── src/{app,features,api,session,access,components,layouts}/
-├── tests/{Unit,Integration,Architecture}/
-└── docs/package-map.md
-```
+| Project | Package chính |
+| --- | --- |
+| `src/AgriSustain.Api` | `Controllers`, `Security`, `Middlewares` |
+| `src/AgriSustain.Application` | `Services`, `Interfaces`, `DTOs`, `Mappings`, `Validators`, `Common` |
+| `src/AgriSustain.Domain` | `Entities` |
+| `src/AgriSustain.Infrastructure` | `Data`, `Repositories`, `UnitOfWork`, `Payments`, `FileStorage`, `Email`, `Auditing`, `BackgroundWorkers` |
+
+`Program.cs` là điểm khởi động và đăng ký DI. Các lớp mở rộng đăng ký Application/Infrastructure đặt ở cấp gốc của project tương ứng; không tạo package `CompositionRoot` hoặc `DependencyInjection` riêng. `Properties` là cấu hình chạy của Visual Studio, không phải package nghiệp vụ.
+
+Các thư mục con theo feature được giữ trong Services, DTOs và Validators. Domain hiện chỉ có Entities; chưa thêm Enums, DomainServices hoặc ValueObjects.
 
 ## Mở và chạy backend
 
-Mở `AgriSustain.sln` trong Visual Studio. Startup project là `AgriSustain.Api`.
+Mở `AgriSustain.sln` trong Visual Studio và chọn startup project `AgriSustain.Api`. Cài .NET SDK phù hợp với `global.json`.
 
 ```powershell
 dotnet build AgriSustain.sln
@@ -47,6 +24,8 @@ dotnet run --project src/AgriSustain.Api
 
 Endpoint kiểm tra bộ khung: `http://localhost:5179/health`.
 
-Solution chứa 4 project .NET có đúng hướng phụ thuộc. Các thư mục feature đã được tạo để nhóm bổ sung code. EF Core/SQL Server, JWT, Redis, PayOS, Gmail, media storage và workers mới được bố trí thư mục; chưa có triển khai nghiệp vụ hay dependency tích hợp. Frontend và tests mới là bộ khung thư mục.
+## Trạng thái triển khai
 
-Xem `docs/package-map.md` để đối chiếu từng package và quy ước đặt tên lớp.
+Repository hiện là bộ khung: chưa có code nghiệp vụ, EF Core/SQL Server, JWT, PayOS, Gmail, file storage hoặc background worker thực tế. Các thư mục và hàm đăng ký DI là vị trí để nhóm bổ sung implementation. Frontend React và tests cũng mới là thư mục dự kiến.
+
+Xem [docs/package-map.md](docs/package-map.md) để đối chiếu 18 package, hướng phụ thuộc và quy ước namespace.
