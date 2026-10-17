@@ -1,5 +1,5 @@
-using AgriSustain.Api.CompositionRoot;
-using AgriSustain.Infrastructure.DependencyInjection;
+using AgriSustain.Api;
+using AgriSustain.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
