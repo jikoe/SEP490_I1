@@ -43,7 +43,7 @@ lại bằng tiếng Việt để nhóm biết thứ tự đọc và chỗ cần
 
 ## 3. Độ phủ comment và cách kiểm tra
 
-- 224 declaration C# gồm method public/private, interface, constructor tường minh/primary
+- 231 declaration C# gồm method public/private, interface, constructor tường minh/primary
   constructor và test helper: đều có XML summary. Roslyn parse source để kiểm tra, không
   dùng regex nhận diện method C#.
 - 25 hàm JavaScript có tên gồm component/helper và named arrow: đều có JSDoc. Audit nhỏ
@@ -64,7 +64,9 @@ dotnet test AgriSustain.sln --configuration Release
 
 ## 4. Kiểm thử hồi quy
 
-- 9 unit + 29 API/Application với demo adapters + 1 architecture = **39 .NET test đạt**.
+- 22 unit + 29 API/Application với demo adapters + 1 architecture = **52 .NET test đạt**.
+  Bổ sung 13 case validator cho report: biên tên/mô tả danh mục, reason/action tài khoản,
+  partition/độ dài phone và điểm âm. Đây là input contract hiện tại, không thay policy.
 - **4 Edge headless E2E đạt**, không retry: account cancel/confirm, category create/edit/
   delete, voucher và đặt đơn, địa chỉ hợp lệ nhưng ngoài service area mẫu.
 - Test mới bao gồm tham chiếu product chưa publish vẫn chặn xóa, policy/child references,
