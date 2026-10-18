@@ -1,44 +1,48 @@
 # Ánh xạ Package Diagram Report 4
 
-| Package trong Report 4 | Thư mục code |
-| --- | --- |
-| API Layer – Controllers | src/AgriSustain.Api/Controllers |
-| API Layer – Security | src/AgriSustain.Api/Security |
-| API Layer – Request Pipeline | src/AgriSustain.Api/RequestPipeline |
-| API Layer – Composition Root | src/AgriSustain.Api/CompositionRoot và Program.cs |
-| Application Layer – UseCase | src/AgriSustain.Application/UseCases/{Feature} |
-| Application Layer – Ports/Interfaces | src/AgriSustain.Application/Ports |
-| Application Layer – DTOs & Validation | src/AgriSustain.Application/DTOs và Validation |
-| Domain Layer – Entities & Value Objects | src/AgriSustain.Domain/Entities và ValueObjects |
-| Domain Layer – Rules & Types | src/AgriSustain.Domain/Rules, Services và Types |
-| Infrastructure Layer – Persistence | src/AgriSustain.Infrastructure/Persistence |
-| Infrastructure Layer – Payment Adapter | src/AgriSustain.Infrastructure/Adapters/Payments/PayOS |
-| Infrastructure Layer – Email & Media Adapters | src/AgriSustain.Infrastructure/Adapters/Email/Gmail và Adapters/Media/FileStorage |
-| Infrastructure Layer – Operational Services | src/AgriSustain.Infrastructure/OperationalServices |
-| Infrastructure Layer – Hosted Background Workers | src/AgriSustain.Infrastructure/HostedBackgroundWorkers |
+Bảng này ánh xạ đúng 18 package con của sơ đồ đã chốt. Tên lớp là quy ước cho implementation sau này; bộ khung hiện chưa triển khai nghiệp vụ.
+
+| Layer | Package | Thư mục code | Trách nhiệm | Quy ước lớp |
+| --- | --- | --- | --- | --- |
+| Api | Controllers | `src/AgriSustain.Api/Controllers` | REST endpoints và payment webhook. | `{Feature}Controller` |
+| Api | Security | `src/AgriSustain.Api/Security` | Cấu hình xác thực JWT và authorization policies/handlers. | `{Purpose}Requirement`, `{Purpose}AuthorizationHandler` |
+| Api | Middlewares | `src/AgriSustain.Api/Middlewares` | Exception handling, request logging và lỗi HTTP thống nhất. | `{Purpose}Middleware` |
+| Application | Services | `src/AgriSustain.Application/Services` | Điều phối use case, chia theo feature. | `{Feature}Service` |
+| Application | Interfaces | `src/AgriSustain.Application/Interfaces` | Hợp đồng services, repositories, UnitOfWork và tích hợp. | `I{Purpose}`, ví dụ `IOrderRepository`, `IUnitOfWork` |
+| Application | DTOs | `src/AgriSustain.Application/DTOs` | Dữ liệu đầu vào và đầu ra của use case. | `{Action}{Entity}Request`, `{Entity}Response` |
+| Application | Mappings | `src/AgriSustain.Application/Mappings` | Ánh xạ Entity và DTO. | `{Feature}MappingProfile` hoặc `{Entity}Mapper` |
+| Application | Validators | `src/AgriSustain.Application/Validators` | Kiểm tra dữ liệu đầu vào. | `{RequestName}Validator` |
+| Application | Common | `src/AgriSustain.Application/Common` | Các kiểu kết quả, phân trang và lỗi dùng chung trong Application. | `Result<T>`, `PagedResult<T>`, `NotFoundException` |
+| Domain | Entities | `src/AgriSustain.Domain/Entities` | Thực thể nghiệp vụ theo Database Design. | Danh từ số ít PascalCase, ví dụ `Order` |
+| Infrastructure | Data | `src/AgriSustain.Infrastructure/Data` | EF Core DbContext, entity configurations và migrations cho SQL Server. | `AppDbContext`, `{Entity}Configuration` |
+| Infrastructure | Repositories | `src/AgriSustain.Infrastructure/Repositories` | Triển khai repository interfaces qua EF Core. | `{Entity}Repository` |
+| Infrastructure | UnitOfWork | `src/AgriSustain.Infrastructure/UnitOfWork` | Phối hợp lưu thay đổi và transaction database. | `UnitOfWork` triển khai `IUnitOfWork` |
+| Infrastructure | Payments | `src/AgriSustain.Infrastructure/Payments` | Tích hợp PayOS/VietQR. | `PayOsPaymentService`, `PayOsClient` |
+| Infrastructure | FileStorage | `src/AgriSustain.Infrastructure/FileStorage` | Lưu/truy xuất file và kiểm tra upload. | `FileStorageService` |
+| Infrastructure | Email | `src/AgriSustain.Infrastructure/Email` | Gửi email qua Google Gmail API. | `GmailEmailService` |
+| Infrastructure | Auditing | `src/AgriSustain.Infrastructure/Auditing` | Ghi lại actor, thao tác, tài nguyên, thời gian và kết quả. | `AuditService` |
+| Infrastructure | BackgroundWorkers | `src/AgriSustain.Infrastructure/BackgroundWorkers` | Đối soát thanh toán, hết hạn đơn, thông báo và công việc định kỳ. | `{Purpose}Worker` |
 
 ## Hướng phụ thuộc
 
-- API -> Application, Infrastructure (composition root đăng ký implementation).
-- Application -> Domain.
-- Infrastructure -> Application, Domain (triển khai các port).
+- Api -> Application: Controllers gọi Services và dùng DTOs.
+- Api -> Infrastructure: `Program.cs` đăng ký implementation qua DI.
+- Application -> Domain: Services sử dụng Entities.
+- Infrastructure -> Application, Domain: triển khai Interfaces và sử dụng Entities.
 - Domain không tham chiếu layer khác.
-- React SPA gọi API qua HTTPS/JSON, không tham chiếu trực tiếp các project C#.
-- Hosted workers gọi Application use cases qua DI scope.
+- BackgroundWorkers gọi Application Services qua DI scope khi cần.
+- React SPA gọi API qua HTTPS/JSON; SQL Server, PayOS/VietQR và Google Gmail API là hệ thống ngoài backend.
 
-## Quy ước lớp
+## Namespace và DI
 
-- Controllers: `{Feature}Controller`.
-- UseCases: `{Feature}Service`.
-- Ports: `I{Purpose}`.
-- DTOs: `{Action}{Entity}Request`, `{Entity}Response`.
-- Validation: `{RequestName}Validator`.
-- Persistence: `AppDbContext`, `{Entity}Configuration`, `{Entity}Repository`, `UnitOfWork`.
-- Adapters: `PayOsPaymentService`, `GmailEmailService`, `FileStorageService`.
-- Workers: `{Purpose}Worker`.
+Namespace đi theo project và đường dẫn, ví dụ `AgriSustain.Application.Services.Orders` hoặc `AgriSustain.Infrastructure.Repositories`. Các hợp đồng Unit of Work đặt ở `Application/Interfaces/UnitOfWork`, implementation đặt ở `Infrastructure/UnitOfWork`.
+
+`Program.cs` gọi `AddApplication()` và `AddInfrastructure(configuration)`. Các extension class nằm tại gốc project Api/Infrastructure để không tạo package ngoài sơ đồ. Hai hàm hiện chỉ là điểm đăng ký, chưa cấu hình JWT, database hoặc dịch vụ tích hợp.
+
+`Data/Contexts`, `Data/Configurations`, `Data/Migrations`, `Payments/PayOS`, `Email/Gmail` và các thư mục feature chỉ là nhóm con của package tương ứng. `Properties` trong Api phục vụ Visual Studio. Không thêm Domain Enums, DomainServices hay ValueObjects khi chưa sử dụng.
+
+Các thư mục `Caching` và `Identity` dưới Interfaces là vị trí hợp đồng dự kiến được giữ lại từ bộ khung cũ; chưa có implementation tương ứng.
 
 ## Nguồn
 
 - Report 4: https://docs.google.com/document/d/1gRUQwJAMfWAywcQd9lA82P-DaHC4E1s9/edit
-- Report 1: https://docs.google.com/document/d/1DWlKcqItA4Ah6QQbzJEr-9Qbc90idHQVJEg2JRw03vU/edit
-- Report 2: https://docs.google.com/document/d/164dQoZm9ztiurbmIr7NxOlSwwT-5UOmt39JKJUEV2OY/edit
