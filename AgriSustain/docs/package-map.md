@@ -37,11 +37,21 @@ Bảng này ánh xạ đúng 18 package con của sơ đồ đã chốt. Tên l�
 
 Namespace đi theo project và đường dẫn, ví dụ `AgriSustain.Application.Services.Orders` hoặc `AgriSustain.Infrastructure.Repositories`. Các hợp đồng Unit of Work đặt ở `Application/Interfaces/UnitOfWork`, implementation đặt ở `Infrastructure/UnitOfWork`.
 
-`Program.cs` gọi `AddApplication()` và `AddInfrastructure(configuration)`. Các extension class nằm tại gốc project Api/Infrastructure để không tạo package ngoài sơ đồ. Hai hàm hiện chỉ là điểm đăng ký, chưa cấu hình JWT, database hoặc dịch vụ tích hợp.
+`Program.cs` gọi `AddApplication()` và `AddInfrastructure(configuration, isDevelopment)`.
+Các extension ở gốc Api/Infrastructure. Hiện đăng ký nghiệp vụ ba UC, validators và demo
+adapters có guard Development; chưa có JWT/SQL/provider thật.
 
 `Data/Contexts`, `Data/Configurations`, `Data/Migrations`, `Payments/PayOS`, `Email/Gmail` và các thư mục feature chỉ là nhóm con của package tương ứng. `Properties` trong Api phục vụ Visual Studio. Không thêm Domain Enums, DomainServices hay ValueObjects khi chưa sử dụng.
 
-Các thư mục `Caching` và `Identity` dưới Interfaces là vị trí hợp đồng dự kiến được giữ lại từ bộ khung cũ; chưa có implementation tương ứng.
+Identity có ICurrentUser và ranh giới đọc fixture của demo. Caching còn là dự kiến.
+Domain bổ sung ValueObjects (address/order/seller snapshots) và Exceptions để bảo vệ invariant;
+Application thêm các nhóm Administration trong Services/DTOs/Validators. Mock persistence ở
+Infrastructure/Data/Demo, Repositories/Demo và UnitOfWork, không nằm trong Domain/Application.
+Chi tiết điểm thay mock: [three-uc-demo-and-integration.md](three-uc-demo-and-integration.md).
+
+Catalog địa giới checkout nằm ở `Infrastructure/Data/Geography` trong package Data sẵn có;
+`IAddressCatalog` ở Application/Interfaces/Services. Domain thêm BatchAllocationSnapshot
+trong ValueObjects để một dòng hàng tham chiếu nhiều lô. Không thêm project/backend layer.
 
 ## Nguồn
 

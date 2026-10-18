@@ -1,3 +1,10 @@
+using AgriSustain.Application.Interfaces.Identity;
+using AgriSustain.Application.Interfaces.Services;
+using AgriSustain.Application.Interfaces.UnitOfWork;
+using AgriSustain.Infrastructure.Data.Demo;
+using AgriSustain.Infrastructure.Data.Geography;
+using AgriSustain.Infrastructure.Repositories.Demo;
+using AgriSustain.Infrastructure.UnitOfWork;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -5,9 +12,38 @@ namespace AgriSustain.Infrastructure;
 
 public static class InfrastructureServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    /// <summary>
+    /// Requires Development plus explicit Demo opt-in, validates provisional commerce options,
+    /// and registers isolated mock persistence/policies together with the real local geography
+    /// catalog. It never silently selects mocks in Production.
+    /// </summary>
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services, IConfiguration configuration, bool isDevelopment)
     {
-        // Register Data, Repositories, UnitOfWork, Payments, Email, FileStorage, Auditing and BackgroundWorkers here.
+        // DEMO-GUARD: simulations are opt-in and Development-only. A real SQL/JWT adapter
+        // must be registered explicitly by the team; never silently fall back to fixtures.
+        if (!isDevelopment || !configuration.GetValue<bool>("Demo:Enabled"))
+        {
+            throw new InvalidOperationException(
+                "Three-UC demo requires Development + Demo:Enabled. "
+                + "Production adapters are pending.");
+        }
+
+        services.AddOptions<DemoCommerceOptions>().Bind(configuration.GetSection("Demo"))
+            .Validate(options => options.Enabled && options.ServiceableProvinceCodes.Length > 0
+                && options.StandardFee >= 0 && options.ExpressFee >= 0
+                && options.AdditionalSellerFee >= 0 && options.PointValue > 0
+                && options.MaxPointsFraction is > 0 and <= 1
+                && options.QuoteMinutes > 0 && options.ReservationMinutes > 0,
+                "Invalid demo commerce assumptions.").ValidateOnStart();
+        services.AddSingleton<TimeProvider>(TimeProvider.System);
+        services.AddSingleton<DemoUnitOfWork>();
+        services.AddSingleton<IThreeUcUnitOfWork>(provider =>
+            provider.GetRequiredService<DemoUnitOfWork>());
+        services.AddSingleton<IDemoIdentityReader>(provider =>
+            provider.GetRequiredService<DemoUnitOfWork>());
+        services.AddSingleton<IAddressCatalog, VietnamAddressCatalog>();
+        services.AddSingleton<ICheckoutPolicy, DemoCheckoutPolicy>();
         return services;
     }
 }

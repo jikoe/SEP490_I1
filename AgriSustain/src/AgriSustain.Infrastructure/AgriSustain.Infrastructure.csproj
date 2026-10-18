@@ -26,4 +26,7 @@
     <Folder Include="Repositories\" />
     <Folder Include="UnitOfWork\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data/Geography/*.json;Data/Geography/LICENSE;Data/Geography/README.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
