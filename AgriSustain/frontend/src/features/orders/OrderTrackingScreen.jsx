@@ -5,7 +5,118 @@ import { money, localTime, Notice, Modal, Field } from '../../components/ui/Comm
  * UC-RC-04: Track Retail Order Screen (SCR-16)
  * Styled with e-commerce agricultural design language matching Figma SCR-TRC-01
  */
+// Sample demonstration orders for UC-RC-04 presentation
+const SAMPLE_ORDERS = [
+  {
+    orderId: 101,
+    orderCode: 'ORD-2026-9812',
+    orderDate: '2026-10-18T09:30:00Z',
+    finalAmount: 325000,
+    orderStatus: 'Shipping', // Đang vận chuyển
+    paymentStatus: 'Paid',
+    recipientName: 'Nguyễn Văn C',
+    recipientPhone: '0987223344',
+    shippingAddress: 'Số 18, Phố Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội',
+    trackingNumber: 'AGRI-EXPRESS-VN8823',
+    sellerOrders: [
+      {
+        sellerOrderId: 201,
+        farmName: 'HTX Nông Nghiệp Lâm Đồng',
+        farmLocation: 'Lâm Hà, Lâm Đồng',
+        items: [
+          {
+            orderItemId: 301,
+            productName: 'Bơ Sáp 034 Hữu Cơ (Chứng chỉ VietGAP)',
+            harvestBatchCode: 'LOT-BO-2026-08',
+            farmPlot: 'Vườn Đồi A3 - Cây đầu dòng',
+            harvestDate: '15/10/2026',
+            quantity: 5,
+            unit: 'kg',
+            unitPriceSnapshot: 65000,
+            isReviewed: false,
+            imageEmoji: '🥑',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    orderId: 102,
+    orderCode: 'ORD-2026-8940',
+    orderDate: '2026-10-12T14:15:00Z',
+    finalAmount: 450000,
+    orderStatus: 'Completed', // Đã hoàn thành
+    paymentStatus: 'Paid',
+    recipientName: 'Nguyễn Văn C',
+    recipientPhone: '0987223344',
+    shippingAddress: 'Số 18, Phố Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội',
+    trackingNumber: 'AGRI-EXPRESS-VN7719',
+    sellerOrders: [
+      {
+        sellerOrderId: 202,
+        farmName: 'Nông trại Xanh Đồng Tháp',
+        farmLocation: 'Cao Lãnh, Đồng Tháp',
+        items: [
+          {
+            orderItemId: 302,
+            productName: 'Xoài Cát Chu Cao Lãnh Chuẩn OCOP 4 Sao',
+            harvestBatchCode: 'LOT-XOAI-09',
+            farmPlot: 'Khu A Cù Lao Tây',
+            harvestDate: '09/10/2026',
+            quantity: 10,
+            unit: 'kg',
+            unitPriceSnapshot: 45000,
+            isReviewed: false,
+            imageEmoji: '🥭',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    orderId: 103,
+    orderCode: 'ORD-2026-7731',
+    orderDate: '2026-10-05T08:00:00Z',
+    finalAmount: 180000,
+    orderStatus: 'Cancelled', // Đã hủy
+    paymentStatus: 'Refunded',
+    recipientName: 'Nguyễn Văn C',
+    recipientPhone: '0987223344',
+    shippingAddress: 'Số 18, Phố Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội',
+    trackingNumber: '—',
+    sellerOrders: [
+      {
+        sellerOrderId: 203,
+        farmName: 'Nông Hộ Rau Sạch An Phú',
+        farmLocation: 'Thuận Thành, Bắc Ninh',
+        items: [
+          {
+            orderItemId: 303,
+            productName: 'Cải Thìa Sinh Thái Bắc Ninh',
+            harvestBatchCode: 'BN-20260920-01',
+            farmPlot: 'Nhà màng số 2',
+            harvestDate: '03/10/2026',
+            quantity: 4,
+            unit: 'kg',
+            unitPriceSnapshot: 45000,
+            isReviewed: true,
+            imageEmoji: '🥬',
+          },
+        ],
+      },
+    ],
+  },
+];
+
 export default function OrderTrackingScreen({ fixture = 'retail-customer', navigate }) {
+  const storedUser = (() => {
+    try {
+      const raw = sessionStorage.getItem('agrisustain:current-user');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  })();
+
+  const authIdentifier = storedUser?.email || fixture;
   const [activeTab, setActiveTab] = useState('All');
   const [keyword, setKeyword] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -14,130 +125,33 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
   const [traceModalOpen, setTraceModalOpen] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
-
-  // Mock sample orders conforming to OrderSummaryDto and OrderDetailDto in Class Diagram
-  const [orders, setOrders] = useState([
-    {
-      orderId: 101,
-      orderCode: 'ORD-2026-9812',
-      orderDate: '2026-10-18T09:30:00Z',
-      finalAmount: 325000,
-      orderStatus: 'Shipping', // Đang vận chuyển
-      paymentStatus: 'Paid',
-      recipientName: 'Nguyễn Văn A',
-      recipientPhone: '0912345678',
-      shippingAddress: 'Số 18, Phố Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội',
-      trackingNumber: 'AGRI-EXPRESS-VN8823',
-      sellerOrders: [
-        {
-          sellerOrderId: 201,
-          farmName: 'HTX Nông Nghiệp Lâm Đồng',
-          farmLocation: 'Lâm Hà, Lâm Đồng',
-          items: [
-            {
-              orderItemId: 301,
-              productName: 'Bơ Sáp 034 Hữu Cơ (Chứng chỉ VietGAP)',
-              harvestBatchCode: 'LOT-BO-2026-08',
-              farmPlot: 'Vườn Đồi A3 - Cây đầu dòng',
-              harvestDate: '15/10/2026',
-              quantity: 5,
-              unit: 'kg',
-              unitPriceSnapshot: 65000,
-              isReviewed: false,
-              imageEmoji: '🥑',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      orderId: 102,
-      orderCode: 'ORD-2026-8940',
-      orderDate: '2026-10-12T14:15:00Z',
-      finalAmount: 450000,
-      orderStatus: 'Completed', // Đã hoàn thành
-      paymentStatus: 'Paid',
-      recipientName: 'Nguyễn Văn A',
-      recipientPhone: '0912345678',
-      shippingAddress: 'Số 18, Phố Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội',
-      trackingNumber: 'AGRI-EXPRESS-VN7719',
-      sellerOrders: [
-        {
-          sellerOrderId: 202,
-          farmName: 'Nông trại Xanh Đồng Tháp',
-          farmLocation: 'Cao Lãnh, Đồng Tháp',
-          items: [
-            {
-              orderItemId: 302,
-              productName: 'Xoài Cát Chu Cao Lãnh Chuẩn OCOP 4 Sao',
-              harvestBatchCode: 'LOT-XOAI-09',
-              farmPlot: 'Khu A Cù Lao Tây',
-              harvestDate: '09/10/2026',
-              quantity: 10,
-              unit: 'kg',
-              unitPriceSnapshot: 45000,
-              isReviewed: false,
-              imageEmoji: '🥭',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      orderId: 103,
-      orderCode: 'ORD-2026-7731',
-      orderDate: '2026-10-05T08:00:00Z',
-      finalAmount: 180000,
-      orderStatus: 'Cancelled', // Đã hủy
-      paymentStatus: 'Refunded',
-      recipientName: 'Nguyễn Văn A',
-      recipientPhone: '0912345678',
-      shippingAddress: 'Số 18, Phố Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội',
-      trackingNumber: '—',
-      sellerOrders: [
-        {
-          sellerOrderId: 203,
-          farmName: 'Nông Hộ Rau Sạch An Phú',
-          farmLocation: 'Thuận Thành, Bắc Ninh',
-          items: [
-            {
-              orderItemId: 303,
-              productName: 'Cải Thìa Sinh Thái Bắc Ninh',
-              harvestBatchCode: 'BN-20260920-01',
-              farmPlot: 'Nhà màng số 2',
-              harvestDate: '03/10/2026',
-              quantity: 4,
-              unit: 'kg',
-              unitPriceSnapshot: 45000,
-              isReviewed: true,
-              imageEmoji: '🥬',
-            },
-          ],
-        },
-      ],
-    },
-  ]);
+  const [isDemoView, setIsDemoView] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
     let cancelled = false;
     async function loadOrders() {
+      setLoading(true);
       try {
         const res = await fetch('/api/orders', {
-          headers: { Authorization: `Demo ${fixture}` },
+          headers: { Authorization: `Demo ${authIdentifier}` },
         });
         if (res.ok) {
           const data = await res.json();
-          if (!cancelled && data && data.items && data.items.length > 0) {
-            setOrders(data.items);
+          if (!cancelled) {
+            setOrders(data.items || []);
           }
         }
       } catch (err) {
         console.error('Failed to load orders', err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
     loadOrders();
     return () => { cancelled = true; };
-  }, [fixture]);
+  }, [authIdentifier, fixture]);
 
   const tabs = [
     { key: 'All', label: 'Tất cả đơn', count: orders.length },
@@ -195,6 +209,41 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
 
       {toastMessage && <Notice>{toastMessage}</Notice>}
 
+      {isDemoView && (
+        <div
+          style={{
+            background: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            borderRadius: 10,
+            padding: '12px 18px',
+            marginBottom: 20,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 10,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>💡</span>
+            <span style={{ fontSize: 13, color: '#166534' }}>
+              Đang hiển thị <strong>3 đơn hàng mẫu</strong> phục vụ kiểm thử tính năng Tra cứu hành trình & Mã lô thu hoạch (UC-RC-04).
+            </span>
+          </div>
+          <button
+            type="button"
+            className="text-button"
+            style={{ color: '#15803d', fontWeight: 700, fontSize: 12 }}
+            onClick={() => {
+              setOrders([]);
+              setIsDemoView(false);
+            }}
+          >
+            Quay lại đơn thực tế của tôi ✕
+          </button>
+        </div>
+      )}
+
       {/* Filter Tabs */}
       <div
         style={{
@@ -246,10 +295,38 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
 
       {/* Orders List */}
       <div style={{ display: 'grid', gap: 20 }}>
-        {filteredOrders.length === 0 ? (
+        {orders.length === 0 && !isDemoView ? (
+          <div className="panel padded empty" style={{ textAlign: 'center', padding: '60px 20px', background: '#ffffff', borderRadius: 14 }}>
+            <span style={{ fontSize: 52, display: 'block', marginBottom: 14 }}>📦</span>
+            <strong style={{ fontSize: 18, color: '#1e6546', display: 'block', marginBottom: 8 }}>
+              Tài khoản {storedUser?.fullName || 'của bạn'} chưa có đơn hàng nào
+            </strong>
+            <p className="muted" style={{ maxWidth: 520, margin: '0 auto 20px', lineHeight: 1.6, fontSize: 13 }}>
+              Tài khoản <strong>{storedUser?.fullName || 'Khách hàng'}</strong> ({storedUser?.email || ''}) vừa được tạo thành công trong cơ sở dữ liệu và hiện chưa phát sinh đơn mua hàng nông sản nào.
+            </p>
+            <button
+              type="button"
+              className="primary"
+              style={{
+                padding: '10px 24px',
+                borderRadius: 8,
+                background: '#1e6546',
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                setOrders(SAMPLE_ORDERS);
+                setIsDemoView(true);
+              }}
+            >
+              🌱 Xem 3 đơn hàng mẫu để kiểm thử tính năng Tra cứu & Lô nông sản (UC-RC-04)
+            </button>
+          </div>
+        ) : filteredOrders.length === 0 ? (
           <div className="panel padded empty" style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <span style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>📦</span>
-            <strong style={{ fontSize: 16, color: '#2d4d3c' }}>Không tìm thấy đơn hàng nào</strong>
+            <span style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>🔍</span>
+            <strong style={{ fontSize: 16, color: '#2d4d3c' }}>Không tìm thấy đơn hàng phù hợp</strong>
             <p className="muted" style={{ marginTop: 6 }}>
               Thử tìm kiếm với từ khóa khác hoặc chuyển tab bộ lọc trạng thái.
             </p>
