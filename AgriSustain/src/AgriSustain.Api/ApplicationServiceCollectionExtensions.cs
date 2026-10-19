@@ -25,6 +25,9 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IOrderTrackingService, OrderTrackingService>();
+        services.AddScoped<AgriSustain.Application.Services.Commerce.ProductService>();
+        services.AddScoped<AgriSustain.Application.Services.Commerce.CartService>();
+        services.AddScoped<AgriSustain.Application.Services.Commerce.OrderFulfillmentService>();
 
         services.AddScoped<IValidator<UserQuery>, UserQueryValidator>();
         services.AddScoped<IValidator<AccountActionRequest>, AccountActionValidator>();

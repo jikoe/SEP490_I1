@@ -197,7 +197,8 @@ internal sealed class SqlApiFactory(string connectionString) : WebApplicationFac
 internal sealed class SqlTestDatabase : IAsyncDisposable
 {
     private readonly string _name = "AgriSustain_ThreeUcTest_" + Guid.NewGuid().ToString("N");
-    public string ConnectionString => $"Server=(localdb)\\MSSQLLocalDB;Database={_name};Integrated Security=True;TrustServerCertificate=True;";
+    private static string Server => Environment.GetEnvironmentVariable("THREE_UC_SQL_SERVER") ?? @"(localdb)\MSSQLLocalDB";
+    public string ConnectionString => $"Server={Server};Database={_name};Integrated Security=True;TrustServerCertificate=True;";
 
     /// <summary>Creates an isolated schema and seed using the reviewed SQLCMD scripts.</summary>
     public static async Task<SqlTestDatabase> CreateAsync()
@@ -213,10 +214,10 @@ internal sealed class SqlTestDatabase : IAsyncDisposable
         await new SqlCommand($"CREATE DATABASE [{db._name}]", master).ExecuteNonQueryAsync();
         try
         {
-            foreach (string script in new[] { "AgriSustain.sql", "seed-three-uc-demo.sql" })
+            foreach (string script in new[] { "AgriSustain.sql", "commerce-three-uc.sql", "seed-three-uc-demo.sql" })
             {
                 var start = new ProcessStartInfo("sqlcmd") { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
-                foreach (string argument in new[] { "-S", "(localdb)\\MSSQLLocalDB", "-d", db._name, "-E", "-b", "-f65001", "-v", $"TargetDatabase={db._name}", "-i", Path.Combine(root, "database", script) })
+                foreach (string argument in new[] { "-S", Server, "-d", db._name, "-E", "-b", "-f65001", "-v", $"TargetDatabase={db._name}", "-i", Path.Combine(root, "database", script) })
                 {
                     start.ArgumentList.Add(argument);
                 }

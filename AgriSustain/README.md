@@ -1,8 +1,11 @@
 # AgriSustain Code Structure
 
-ASP.NET Core Web API 8.0 giữ bốn project backend theo Report 4. Hiện có code cho đúng ba UC:
-UC-ADM-03 (trạng thái tài khoản), UC-ADM-05 (danh mục) và UC-RC-02 (checkout bán lẻ),
-cùng giao diện React. Ba UC đọc/ghi SQL Server trong Development; auth, điểm, phí giao và retry key vẫn giả lập theo yêu cầu.
+ASP.NET Core Web API 8.0 giữ bốn project backend theo Report 4, cùng giao diện React.
+Ngoài UC-ADM-03, UC-ADM-05 và UC-RC-02, đã bổ sung UC-FAR-03 (quản lý sản phẩm),
+UC-FAR-06 (xử lý đơn hàng) và UC-RC-01 (giỏ hàng), đọc/ghi SQL Server trong Development.
+Auth, điểm, phí giao và thanh toán vẫn dùng các tích hợp giả lập hiện có.
+
+Xem [hướng dẫn ba UC thương mại, schema và kết quả test](docs/commerce-three-uc.md).
 
 Cập nhật EF Core Database First: [cấu hình, lệnh scaffold và cách chạy](docs/ef-core-database-first.md).
 Đã lấy 47 entity từ database `AgriSustain`; [đối chiếu giao diện Report 3](docs/three-uc-srs-screen-review.md).
@@ -42,8 +45,9 @@ theo mock; Demo chỉ chạy khi Development và Demo:Enabled bật; chưa có J
 Xem [seed và chạy SQL](database/demo-data-and-web.md), [luồng theo file](docs/three-uc-file-flows.md)
 và [hướng dẫn/đối chiếu test](docs/three-uc-testing-guide-and-report-review.md).
 
-Theo yêu cầu mới, bản EF/UI chỉ build và kiểm tra nhanh trong lúc chờ duyệt code;
-chưa chạy lại bộ unit/integration/E2E chi tiết. Kết quả test cũ không xác nhận bản này.
+Kiểm tra ngày 19/10/2026: 117/117 Unit Test, 56/56 SQL/API test cho ba UC thương mại,
+25/25 kiểm tra giao diện với API stub (sau đối chiếu thiết kế UI) và build backend/frontend đều thành công.
+Chi tiết phạm vi và lịch sử lỗi nằm trong hướng dẫn ba UC thương mại ở trên.
 
 - [Hướng dẫn chạy, API, comment và thay từng mock](docs/three-uc-demo-and-integration.md).
 - [16 vấn đề database và giải pháp](docs/database-issues-and-solutions.md).

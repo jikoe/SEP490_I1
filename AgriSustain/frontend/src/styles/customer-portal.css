@@ -588,3 +588,17 @@ dialog::backdrop {
   backdrop-filter: blur(4px);
 }
 
+/* Keep the shared navigation usable when commerce pages are opened on small screens. */
+@media (max-width: 800px) {
+  .customer-header-container { height: auto; flex-wrap: wrap; gap: 12px; padding: 12px 16px; }
+  .header-left { flex-wrap: wrap; max-width: 100%; }
+  .header-right { margin-left: auto; max-width: 100%; }
+  .header-center { order: 3; flex: 1 0 100%; max-width: none; margin: 0; }
+  .portal-subbar-container { flex-wrap: wrap; gap: 8px; padding: 0 16px; }
+  .portal-slogan { min-width: 0; }
+  .portal-breadcrumb { flex-wrap: wrap; }
+  .customer-portal-main { padding: 20px 12px 40px; min-width: 0; }
+  .banner-content, .footer-grid { grid-template-columns: minmax(0, 1fr); }
+  .bottom-bar { flex-wrap: wrap; gap: 10px; }
+}
+

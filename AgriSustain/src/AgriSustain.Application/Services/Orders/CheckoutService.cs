@@ -280,7 +280,7 @@ public sealed class CheckoutService(
             }
 
             var batches = await session.Checkout.FindBatchesAsync(product.Id, cancellationToken);
-            var allocations = AllocateBatches(batches.Where(batch => batch.ProductId == product.Id),
+            var allocations = AllocateBatches(batches.Where(batch => batch.ProductId == product.Id && (item.BatchId == null || batch.Id == item.BatchId)),
                 item.Quantity, Today(now), remaining);
             if (allocations == null)
             {

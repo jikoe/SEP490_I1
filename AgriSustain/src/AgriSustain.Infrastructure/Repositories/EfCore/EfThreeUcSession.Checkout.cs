@@ -19,7 +19,7 @@ internal sealed partial class EfThreeUcSession
         var items = await _db.CartItem.AsNoTracking()
             .Where(item => item.Cart.UserId == buyerId && item.PreOrderCampaignId == null)
             .OrderBy(item => item.CartItemId)
-            .Select(item => new CartLine(item.CartItemId, item.ProductId, item.Quantity, item.IsSelected))
+            .Select(item => new CartLine(item.CartItemId, item.ProductId, item.Quantity, item.IsSelected, item.HarvestBatchId))
             .ToListAsync(cancellationToken);
         var addresses = await _db.DeliveryAddress.AsNoTracking()
             .Where(row => row.UserId == buyerId && row.Status == "Active")

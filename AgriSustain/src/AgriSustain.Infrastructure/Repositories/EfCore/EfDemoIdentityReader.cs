@@ -11,7 +11,7 @@ namespace AgriSustain.Infrastructure.Repositories.EfCore;
 /// verified principal and durable session revocation; keep Development/loopback restrictions.
 /// </summary>
 public sealed class EfDemoIdentityReader(AgriSustainDbContext db,
-    SqlDemoDependencies mocks, TimeProvider clock) : IDemoIdentityReader
+    TimeProvider clock) : IDemoIdentityReader
 {
     /// <summary>Reads only ID/role for a known active, unlocked seed identity; never reads its hash.</summary>
     public async Task<(long Id, string Role)?> FindAsync(string fixture,
@@ -32,20 +32,26 @@ public sealed class EfDemoIdentityReader(AgriSustainDbContext db,
             .Select(u => new { u.UserId, u.Role }).FirstOrDefaultAsync(cancellationToken);
         if (directUser != null) return (directUser.UserId, directUser.Role);
 
+        string? seedUsername = fixture switch
+        {
+            "admin" => "demo3uc_admin", "support" => "demo3uc_support",
+            "retail-customer" => "demo3uc_retail", "farmer" => "demo3uc_farmer_green",
+            "other-retail-customer" => "demo3uc_retail_other", _ => null
+        };
         string? mappedUsername = fixture switch
         {
             "admin" => "admin_system",
             "support" => "staff_support",
             "retail-customer" => "buyer_retail",
             "farmer" => "farmer_dalat",
-            "other-retail-customer" => "buyer_retail",
+            "other-retail-customer" => "demo3uc_retail_other",
             _ => null
         };
 
         if (mappedUsername is not null)
         {
             var seedUser = await db.User.AsNoTracking()
-                .Where(row => (row.Username == mappedUsername || row.Username == $"demo3uc_{fixture}") && row.Status == "Active"
+                .Where(row => (row.Username == mappedUsername || row.Username == seedUsername) && row.Status == "Active"
                     && (row.LockedUntil == null || row.LockedUntil <= now))
                 .Select(row => new { row.UserId, row.Role }).FirstOrDefaultAsync(cancellationToken);
             if (seedUser is not null) return (seedUser.UserId, seedUser.Role);

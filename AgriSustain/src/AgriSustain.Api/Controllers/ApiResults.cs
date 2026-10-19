@@ -23,6 +23,7 @@ internal static class ApiResults
             "Forbidden" => 403,
             "NotFound" => 404,
             "Conflict" => 409,
+            "Unavailable" => 503,
             _ => 400
         };
         var problem = new ProblemDetails

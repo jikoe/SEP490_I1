@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import ProductOffers from '../features/commerce/ProductOffers';
 import RegisterScreen from '../features/authentication/RegisterScreen';
 import ProfileScreen from '../features/profiles/ProfileScreen';
 import OrderTrackingScreen from '../features/orders/OrderTrackingScreen';
 import CustomerHeader from '../layouts/CustomerHeader';
 import CustomerFooter from '../layouts/CustomerFooter';
+import ProductManagement from '../features/commerce/ProductManagement';
+import ShoppingCart from '../features/commerce/ShoppingCart';
+import Fulfillment from '../features/commerce/Fulfillment';
+import CheckoutScreen from '../features/orders/CheckoutScreen';
 import '../styles/customer-portal.css';
 
 /**
@@ -16,7 +21,7 @@ import '../styles/customer-portal.css';
 
 function readPortalRoute() {
   const path = window.location.hash.slice(1);
-  return /^\/(register|profile|orders)$/.test(path) ? path : '/orders';
+  return /^\/(register|profile|orders|products|cart|checkout|farmer\/products|farmer\/orders|receipts)$/.test(path) ? path : '/orders';
 }
 
 function readPortalFixture() {
@@ -49,7 +54,7 @@ export default function CustomerPortalApp() {
 
   const screen = route === '/register' ? 'register'
     : route === '/profile' ? 'profile'
-    : 'orders';
+    : route === '/orders' ? 'orders' : 'commerce';
 
   useEffect(() => {
     const handleRoute = () => setRoute(readPortalRoute());
@@ -71,6 +76,8 @@ export default function CustomerPortalApp() {
     sessionStorage.setItem('agrisustain:demo-fixture', newFixture);
     setCurrentUser(null);
     setFixture(newFixture);
+    if (role === 'RetailCustomer' && route.startsWith('/farmer/')) navigate('/cart');
+    if (role === 'Farmer' && ['/cart', '/checkout', '/receipts', '/products'].includes(route)) navigate('/farmer/products');
   }
 
   const breadcrumbLabels = {
@@ -78,6 +85,17 @@ export default function CustomerPortalApp() {
     profile: 'Hồ sơ cá nhân & Sổ địa chỉ (SCR-11)',
     orders: 'Lịch sử & Theo dõi đơn hàng (SCR-16)',
   };
+  const commerceBreadcrumbs = {
+    '/farmer/products': 'Quản lý sản phẩm',
+    '/farmer/orders': 'Xử lý đơn hàng',
+    '/cart': 'Giỏ hàng',
+    '/checkout': 'Thanh toán',
+    '/products': 'Khám phá nông sản',
+    '/receipts': 'Xác nhận nhận hàng',
+  };
+  const commerceLinks = isFarmer
+    ? [['/farmer/products', 'Quản lý sản phẩm'], ['/farmer/orders', 'Xử lý đơn hàng']]
+    : [['/cart', 'Giỏ hàng'], ['/orders', 'Đơn hàng của tôi'], ['/receipts', 'Xác nhận nhận hàng']];
 
   return (
     <div className="customer-portal-shell">
@@ -103,16 +121,23 @@ export default function CustomerPortalApp() {
           <div className="portal-breadcrumb">
             <a href="#/orders" onClick={(e) => { e.preventDefault(); navigate('/orders'); }}>Trang chủ</a>
             <span>›</span>
-            <span>{breadcrumbLabels[screen]}</span>
+            <span>{commerceBreadcrumbs[route] || breadcrumbLabels[screen]}</span>
           </div>
         </div>
       </div>
 
       {/* 3. Vùng nội dung chính của màn hình */}
-      <main className="customer-portal-main">
+      <nav className="commerce commerce-actions" aria-label="Mua bán nông sản">{commerceLinks.map(([path, label]) => <button key={path} className={route === path ? 'primary' : undefined} aria-current={route === path ? 'page' : undefined} onClick={() => navigate(path)}>{label}</button>)}</nav>
+<main key={fixture} className="customer-portal-main">
         {screen === 'register' && <RegisterScreen navigate={navigate} />}
         {screen === 'profile' && <ProfileScreen fixture={fixture} navigate={navigate} />}
         {screen === 'orders' && <OrderTrackingScreen fixture={fixture} navigate={navigate} />}
+        {route === '/cart' && <ShoppingCart fixture={fixture} navigate={navigate} userName={userName} />}
+        {route === '/products' && <ProductOffers fixture={fixture} />}
+        {route === '/checkout' && <><button onClick={() => navigate('/cart')}>← Quay lại giỏ hàng</button><CheckoutScreen fixture={fixture} /></>}
+        {route === '/farmer/products' && <ProductManagement fixture={fixture} />}
+        {route === '/farmer/orders' && <Fulfillment fixture={fixture} />}
+        {route === '/receipts' && <Fulfillment fixture={fixture} buyer />}
       </main>
 
       {/* 4. Footer phong cách thương mại nông sản chuẩn */}

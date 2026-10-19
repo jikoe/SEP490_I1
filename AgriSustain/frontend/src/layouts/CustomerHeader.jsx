@@ -60,11 +60,11 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
           <div
             className="cart-button"
             title="Giỏ hàng nông sản"
-            onClick={() => navigate('/checkout')}
+            onClick={() => navigate('/cart')}
             style={{ cursor: 'pointer' }}
           >
             <span className="cart-icon">🛒</span>
-            <span className="cart-count">2</span>
+
           </div>
 
           {/* Menu tài khoản người dùng */}
@@ -143,14 +143,14 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
                     <button
                       type="button"
                       className={`role-switch-btn ${user.role === 'RetailCustomer' ? 'active' : ''}`}
-                      onClick={() => onSwitchRole('RetailCustomer')}
+                      onClick={() => { setUserMenuOpen(false); onSwitchRole('RetailCustomer'); }}
                     >
                       Người mua lẻ
                     </button>
                     <button
                       type="button"
                       className={`role-switch-btn ${user.role === 'Farmer' ? 'active' : ''}`}
-                      onClick={() => onSwitchRole('Farmer')}
+                      onClick={() => { setUserMenuOpen(false); onSwitchRole('Farmer'); }}
                     >
                       Nông dân
                     </button>

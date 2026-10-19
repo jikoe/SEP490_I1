@@ -1,4 +1,4 @@
 namespace AgriSustain.Application.DTOs.Orders;
 
-// UC-RC-01 read model: the buyer selects a product, never a harvest batch (DB-05 B).
-public sealed record CartLine(long Id, long ProductId, decimal Quantity, bool Selected);
+// Actual-batch association is optional for legacy carts; new UC-RC-01 lines always carry it.
+public sealed record CartLine(long Id, long ProductId, decimal Quantity, bool Selected, long? BatchId = null);
