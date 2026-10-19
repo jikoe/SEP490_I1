@@ -1,6 +1,7 @@
 using AgriSustain.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 
 namespace AgriSustain.Api.Middlewares;
 
@@ -25,18 +26,23 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
         }
 
         bool domainFailure = exception is BusinessRuleException;
+        bool unavailableDatabase = exception is SqlException sql
+            && (sql.Class >= 20 || sql.Number is -2 or -1 or 2 or 53 or 4060 or 18456);
         if (!domainFailure)
         {
             logger.LogError(exception, "Three-UC request failed with trace {TraceId}",
                 context.TraceIdentifier);
         }
 
-        context.Response.StatusCode = domainFailure ? 409 : 500;
+        context.Response.StatusCode = domainFailure ? 409 : unavailableDatabase ? 503 : 500;
         await context.Response.WriteAsJsonAsync(new ProblemDetails
         {
             Status = context.Response.StatusCode,
-            Title = domainFailure ? exception.Message : "Không thể xử lý. Vui lòng thử lại.",
-            Extensions = { ["code"] = domainFailure ? "BUSINESS_CONFLICT" : "SERVER_ERROR",
+            Title = domainFailure ? exception.Message : unavailableDatabase
+                ? "Không kết nối được cơ sở dữ liệu. Kiểm tra SQL Server/LocalDB rồi tải lại."
+                : "Không thể xử lý. Vui lòng thử lại.",
+            Extensions = { ["code"] = domainFailure ? "BUSINESS_CONFLICT"
+                    : unavailableDatabase ? "DATABASE_UNAVAILABLE" : "SERVER_ERROR",
                 ["traceId"] = context.TraceIdentifier }
         }, cancellationToken);
         return true;

@@ -1,5 +1,7 @@
 # Kiểm tra code sau cập nhật database
 
+Cập nhật EF Core Database First: [cấu hình và scaffold](ef-core-database-first.md), [đối chiếu màn hình Report 3](three-uc-srs-screen-review.md). Bản EF/UI mới chỉ build và xem nhanh; kết quả test chi tiết cũ chưa xác nhận bản mới.
+
 Ngày 18/10/2026. Phạm vi chỉ UC-ADM-03, UC-ADM-05, UC-RC-02 và các adapter được cho phép
 giả lập. Comment trong code bằng tiếng Anh theo coding-standards.md; tài liệu này giải thích
 lại bằng tiếng Việt để nhóm biết thứ tự đọc và chỗ cần thay khi tích hợp.
@@ -108,7 +110,7 @@ string vào appsettings. Không gỡ guard demo hoặc công bố API đã lưu 
 
 ## Cập nhật SQL 19/10/2026
 
-Đã nối SqlThreeUcUnitOfWork/SqlThreeUcSession cho đúng ba UC. Bảng và luồng chi tiết ở
+Đã nối EfThreeUcUnitOfWork/EfThreeUcSession cho đúng ba UC. Bảng và luồng chi tiết ở
 [luồng theo file](three-uc-file-flows.md). Các phát biểu chưa SQL ở phần lịch sử18/10
 không còn mô tả runtime Development hiện tại. Auth/points/fee/retry vẫn mock, có giới hạn
 restart và hướng thay trong XML/JSDoc. Audit comment:288 khai báo C# có tài liệu,0 thiếu;

@@ -53,11 +53,13 @@ Khi preview, catalog server xác nhận code pair và ghi tên/version vào quot
 
 ## Chạy web đọc/ghi SQL
 
-`appsettings.Development.json` chọn `Persistence:Mode=SqlDemo` và connection string
-Windows Authentication cho `(localdb)\MSSQLLocalDB` / `AgriSustain`.
+`appsettings.Development.json` chọn `Persistence:Mode=SqlServer`. Connection string
+Windows Authentication đặt ở `src/AgriSustain.Api/appsettings.json`, trỏ đến
+`(localdb)\MSSQLLocalDB` / `AgriSustain`. Ba UC dùng scaffolded DbContext và EF repositories;
+xem [lệnh Database First](../docs/ef-core-database-first.md).
 `Demo:Enabled=true` và môi trường Development vẫn bắt buộc vì auth/policy còn giả lập.
 Không có fallback sang InMemory nếu SQL lỗi. `/health` cho biết mode, chỉ là liveness,
-không thay kiểm tra kết nối DB.
+không thay kiểm tra kết nối DB. `/health/database` thực sự mở SQL và đọc Category.
 
 Từ thư mục AgriSustain:
 
@@ -96,6 +98,9 @@ Seed chạy lại **không reset cart/tồn/status** đã thay đổi. Dùng DB 
 đặt đơn nhiều lần; không reset dữ liệu đang dùng chỉ để chạy test.
 
 ## Bằng chứng và dữ liệu
+
+**Phần test bên dưới thuộc phiên bản trước khi chuyển EF Core/UI.** Bản hiện tại chỉ
+build + kiểm tra GET/preview/giao diện; chưa chạy lại bộ test chi tiết theo yêu cầu chờ duyệt.
 
 Seed đã được áp và kiểm tra FK/CHECK; bốn bài `SqlPersistenceTests.cs` chạy trên database
 GUID riêng, tự tạo schema+seed và tự dọn. Kiểm chứng persistence, rollback audit thật,

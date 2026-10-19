@@ -82,7 +82,8 @@ internal sealed class DemoSession(DemoState state) :
         CategoryQuery query, CancellationToken cancellationToken)
     {
         var categories = state.Categories.Values.Where(category =>
-            (query.IsActive == null || category.IsActive == query.IsActive)
+            (query.Id == null || category.Id == query.Id)
+            && (query.IsActive == null || category.IsActive == query.IsActive)
             && (!query.RootOnly || category.ParentId == null)
             && (query.ParentId == null || category.ParentId == query.ParentId)
             && (string.IsNullOrWhiteSpace(query.Keyword)

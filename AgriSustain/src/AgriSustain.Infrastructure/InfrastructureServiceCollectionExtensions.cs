@@ -4,7 +4,7 @@ using AgriSustain.Application.Interfaces.UnitOfWork;
 using AgriSustain.Infrastructure.Data.Demo;
 using AgriSustain.Infrastructure.Data.Geography;
 using AgriSustain.Infrastructure.Repositories.Demo;
-using AgriSustain.Infrastructure.Repositories.Sql;
+using AgriSustain.Infrastructure.Repositories.EfCore;
 using AgriSustain.Infrastructure.UnitOfWork;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,15 +39,15 @@ public static class InfrastructureServiceCollectionExtensions
                 "Invalid demo commerce assumptions.").ValidateOnStart();
         services.AddSingleton<TimeProvider>(TimeProvider.System);
         string mode = configuration["Persistence:Mode"] ?? "InMemory";
-        if (mode == "SqlDemo")
+        if (mode == "SqlServer")
         {
             if (string.IsNullOrWhiteSpace(configuration.GetConnectionString("AgriSustain")))
             {
-                throw new InvalidOperationException("SqlDemo requires ConnectionStrings:AgriSustain.");
+                throw new InvalidOperationException("SqlServer requires ConnectionStrings:AgriSustain.");
             }
             services.AddSingleton<SqlDemoDependencies>();
-            services.AddScoped<IThreeUcUnitOfWork, SqlThreeUcUnitOfWork>();
-            services.AddSingleton<IDemoIdentityReader, SqlDemoIdentityReader>();
+            services.AddScoped<IThreeUcUnitOfWork, EfThreeUcUnitOfWork>();
+            services.AddScoped<IDemoIdentityReader, EfDemoIdentityReader>();
         }
         else if (mode == "InMemory")
         {

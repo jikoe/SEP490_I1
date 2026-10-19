@@ -1,5 +1,7 @@
 # Ánh xạ Package Diagram Report 4
 
+Cập nhật EF Core Database First: [cấu hình và scaffold](ef-core-database-first.md), [đối chiếu màn hình Report 3](three-uc-srs-screen-review.md). Bản EF/UI mới chỉ build và xem nhanh; kết quả test chi tiết cũ chưa xác nhận bản mới.
+
 Bảng này ánh xạ đúng 18 package con của sơ đồ đã chốt. Tên lớp là quy ước cho implementation sau này; bộ khung hiện chưa triển khai nghiệp vụ.
 
 | Layer | Package | Thư mục code | Trách nhiệm | Quy ước lớp |
@@ -60,5 +62,5 @@ trong ValueObjects để một dòng hàng tham chiếu nhiều lô. Không thê
 
 Cập nhật19/10: feature labels theo Tracking là **Administration** (ADM03/ADM05) và
 **Consumer Ordering** (RC02), actor vẫn RetailCustomer. Giữ namespaces Report4.
-Development chọn SQL repositories trong `Repositories/Sql` và `SqlThreeUcUnitOfWork`;
+Development chọn SQL repositories trong `Repositories/EfCore` và `EfThreeUcUnitOfWork`;
 `DemoUnitOfWork/DemoSession` phục vụ test InMemory riêng. Điểm/auth/policy/retry vẫn mock.

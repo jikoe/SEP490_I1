@@ -84,7 +84,8 @@ Log tương ứng: `../../tmp/db-backup-AgriSustain.log`, `db-apply-AgriSustain.
 ## 5. Kết nối SQL cho ba UC (19/10/2026)
 
 Đã thêm `seed-three-uc-demo.sql`, áp trên AgriSustain sau backup, và nối SQL adapter cho
-UC-ADM-03/ADM-05/RC-02. Development chọn `Persistence:Mode=SqlDemo`; không tự fallback.
+UC-ADM-03/ADM-05/RC-02. Development chọn `Persistence:Mode=SqlServer` qua EF Core;
+không tự fallback. Xem [Database First và appsettings](../docs/ef-core-database-first.md).
 Repository/UoW dùng parameterized SQL, Serializable transaction, SQL application lock,
 conditional stock update và audit cùng transaction. Không dùng EF hoặc thay schema mới.
 

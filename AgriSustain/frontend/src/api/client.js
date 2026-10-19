@@ -23,7 +23,7 @@ export async function request(path, { fixture, signal, method = 'GET', body } = 
     error.status = response.status;
     throw error;
   }
-  if (Array.isArray(data.items)) {
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
     data.currentActorId = Number(response.headers.get('X-Demo-Actor-Id')) || null;
   }
   return data;

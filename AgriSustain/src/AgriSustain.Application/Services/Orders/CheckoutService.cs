@@ -33,11 +33,32 @@ public sealed class CheckoutService(
             var access = await CurrentUserAccess.RequireAsync(
                 session, currentUser, "RetailCustomer",
                 timeProvider.GetUtcNow(), cancellationToken);
-            return access.Error != null || access.Value == null
-                ? Result<CommerceContext>.Failure(access.Error
-                    ?? new Error("FORBIDDEN", "Không đủ quyền.", "Forbidden"))
-                : Result<CommerceContext>.Success(await session.Checkout.GetContextAsync(
-                    access.Value.Id, cancellationToken));
+            if (access.Error != null || access.Value == null)
+            {
+                return Result<CommerceContext>.Failure(access.Error
+                    ?? new Error("FORBIDDEN", "Không đủ quyền.", "Forbidden"));
+            }
+            var context = await session.Checkout.GetContextAsync(access.Value.Id, cancellationToken);
+            var selected = new List<OrderLineSnapshot>();
+            // Read-only item previews stay visible before a complete address exists. These are
+            // not accepted quotes or reservations; Place still recalculates every eligibility,
+            // price and FEFO rule. Cart editing remains owned by UC-RC-01.
+            foreach (var item in context.Items.Where(item => item.Selected))
+            {
+                var product = await session.Checkout.FindProductAsync(item.ProductId,
+                    cancellationToken);
+                if (product == null)
+                {
+                    continue;
+                }
+                decimal price = product.WholesalePrice is { } tierPrice
+                    && product.WholesaleMinQuantity is { } minimum && item.Quantity >= minimum
+                    ? tierPrice : product.RetailPrice;
+                selected.Add(new OrderLineSnapshot(item.Id, product.Id, product.SellerId,
+                    product.SellerName, product.Name, product.Unit, item.Quantity, price,
+                    Money(price * item.Quantity), [], product.ImageUrl));
+            }
+            return Result<CommerceContext>.Success(context with { SelectedItems = selected });
         }, cancellationToken);
 
     /// <summary>
@@ -276,7 +297,7 @@ public sealed class CheckoutService(
 
             lines.Add(new OrderLineSnapshot(item.Id, product.Id, product.SellerId,
                 product.SellerName, product.Name, product.Unit, item.Quantity, unitPrice,
-                Money(unitPrice * item.Quantity), allocations));
+                Money(unitPrice * item.Quantity), allocations, product.ImageUrl));
         }
 
         decimal subtotal = lines.Sum(line => line.Subtotal);
@@ -331,7 +352,14 @@ public sealed class CheckoutService(
             {
                 buyerId,
                 normalized,
-                lines,
+                // Product photos are display metadata, not a change to the accepted price,
+                // quantity or stock allocation. Keep them out of the checkout fingerprint.
+                lines = lines.Select(line => new
+                {
+                    line.CartItemId, line.ProductId, line.SellerId, line.SellerName,
+                    line.ProductName, line.Unit, line.Quantity, line.UnitPrice,
+                    line.Subtotal, line.Allocations
+                }),
                 fee,
                 voucherDiscount,
                 pointsDiscount,

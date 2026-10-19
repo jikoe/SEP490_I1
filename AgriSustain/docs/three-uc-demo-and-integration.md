@@ -1,5 +1,7 @@
 # Chạy và tích hợp ba UC — phiên bản sau review code
 
+Cập nhật EF Core Database First: [cấu hình và scaffold](ef-core-database-first.md), [đối chiếu màn hình Report 3](three-uc-srs-screen-review.md). Bản EF/UI mới chỉ build và xem nhanh; kết quả test chi tiết cũ chưa xác nhận bản mới.
+
 Ngày 18/10/2026. Chỉ UC-ADM-03, UC-ADM-05, UC-RC-02. Quyết định người dùng trong
 database-decisions-round-3.md được ưu tiên hơn nội dung SRS/SDS cũ về ảnh/archive/Version
 và batch chọn trong giỏ. Xem [kiểm tra hàm/comment](three-uc-code-review.md).
@@ -7,7 +9,7 @@ và batch chọn trong giỏ. Xem [kiểm tra hàm/comment](three-uc-code-review
 ## 1. Trạng thái chạy
 
 Database `(localdb)\MSSQLLocalDB / AgriSustain` đã có 47 bảng, xem
-[bộ SQL](../database/README.md). Cập nhật 19/10: Development mặc định SqlDemo, ba UC đọc/ghi
+[bộ SQL](../database/README.md). Cập nhật 19/10: Development mặc định SqlServer qua EF Core, ba UC đọc/ghi
 SQL bền vững. Auth, điểm, phí/phạm vi giao, retry cache vẫn giả lập; restart reset các mock.
 Địa giới dùng JSON local thật. [Seed/run chi tiết](../database/demo-data-and-web.md).
 
@@ -100,7 +102,7 @@ chế này làm cam kết idempotency bền vững hoặc nhiều server.
 | Adapter | Hợp đồng cần giữ / việc cần thay |
 | --- | --- |
 | DemoAuthenticationHandler/HttpCurrentUser/DemoUnitOfWork.FindAsync | JWT/session thật và ma trận permission/target, vẫn recheck trạng thái và ownership; chưa viết auth UC |
-| SqlThreeUcUnitOfWork/SqlThreeUcSession | Đã có SQL paging/transaction/identity/audit/reservation; production cần review lock ordering, timeout và throughput |
+| EfThreeUcUnitOfWork/EfThreeUcSession | Đã có SQL paging/transaction/identity/audit/reservation; production cần review lock ordering, timeout và throughput |
 | SQL cart/catalog read seam | Đọc bảng thật, chỉ xóa selected cart trong Place; module cart CRUD/product management vẫn ngoài scope |
 | SQL category references | Đã query child/Product/RegionalPriceBenchmark/CommissionPolicy thật, giữ NO ACTION FK |
 | VietnamAddressCatalog | Đã dùng JSON thật. Khi cập nhật dữ liệu phải giữ source/license/hash, không tự đổi snapshot đơn cũ hoặc đoán mapping từ tên |

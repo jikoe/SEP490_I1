@@ -8,7 +8,9 @@ using AgriSustain.Application.DTOs.Orders;
 using AgriSustain.Application.Interfaces.Identity;
 using AgriSustain.Application.Interfaces.UnitOfWork;
 using AgriSustain.Infrastructure.Data.Demo;
-using AgriSustain.Infrastructure.Repositories.Sql;
+using AgriSustain.Infrastructure.Repositories.EfCore;
+using AgriSustain.Infrastructure.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using AgriSustain.Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -168,13 +170,17 @@ internal sealed class SqlApiFactory(string connectionString) : WebApplicationFac
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     ["ConnectionStrings:AgriSustain"] = connectionString,
-                    ["Persistence:Mode"] = "SqlDemo"
+                    ["Persistence:Mode"] = "SqlServer"
                 }).Build()));
             services.RemoveAll<IThreeUcUnitOfWork>();
             services.RemoveAll<IDemoIdentityReader>();
-            services.AddScoped<IThreeUcUnitOfWork, SqlThreeUcUnitOfWork>();
+            // Never inherit the application's connection: this fixture owns a disposable DB.
+            services.RemoveAll<AgriSustainDbContext>();
+            services.RemoveAll<DbContextOptions<AgriSustainDbContext>>();
+            services.AddDbContext<AgriSustainDbContext>(options => options.UseSqlServer(connectionString));
+            services.AddScoped<IThreeUcUnitOfWork, EfThreeUcUnitOfWork>();
             services.AddSingleton<SqlDemoDependencies>();
-            services.AddSingleton<IDemoIdentityReader, SqlDemoIdentityReader>();
+            services.AddScoped<IDemoIdentityReader, EfDemoIdentityReader>();
         });
     }
 

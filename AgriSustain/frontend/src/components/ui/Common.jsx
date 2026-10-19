@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 
 /**
  * Formats a server-computed decimal amount for Vietnamese display. Display formatting does not
@@ -25,7 +25,9 @@ export const statusLabel = {
   Active: 'Hoạt động', Suspended: 'Tạm ngưng', Pending: 'Chờ duyệt', Rejected: 'Từ chối',
   SystemAdmin: 'Quản trị hệ thống', CustomerSupport: 'Hỗ trợ khách hàng',
   RetailCustomer: 'Người mua lẻ', Farmer: 'Nông dân / HTX',
-  WholesaleBuyer: 'Người mua B2B',
+  WholesaleBuyer: 'Người mua B2B', VerificationOfficer: 'Nhân viên xác minh',
+  ContentModerator: 'Kiểm duyệt nội dung', PromotionStaff: 'Nhân viên khuyến mại',
+  FinanceStaff: 'Nhân viên tài chính',
 };
 
 /**
@@ -43,10 +45,21 @@ export function Notice({ children, error = false }) {
  */
 export function Pager({ total, page, pageSize = 10, onPage }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
-  return <div className="pager"><span>{total} bản ghi · Trang {page}/{pages}</span>
-    <div className="actions"><button disabled={page <= 1} onClick={() => onPage(page - 1)}>
-      Trước</button><button disabled={page >= pages} onClick={() => onPage(page + 1)}>
-      Sau</button></div></div>;
+  const first = Math.max(1, Math.min(page - 2, pages - 4));
+  const numbers = Array.from({ length: Math.min(pages, 5) }, (_, index) => first + index);
+  return <div className="pager"><span>{total ? (page - 1) * pageSize + 1 : 0}–{
+    Math.min(page * pageSize, total)} trên {total} bản ghi</span>
+    <nav className="page-buttons" aria-label="Phân trang"><button type="button"
+      disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Trang trước">‹</button>
+      {first > 1 && <button type="button" onClick={() => onPage(1)}>1</button>}
+      {first > 2 && <span>…</span>}{numbers.map((number) => <button type="button" key={number}
+        className={number === page ? 'current' : ''} aria-label={`Trang ${number}`}
+        aria-current={number === page ? 'page' : undefined} onClick={() => onPage(number)}>
+        {number}</button>)}
+      {numbers.at(-1) < pages - 1 && <span>…</span>}
+      {numbers.at(-1) < pages && <button type="button" onClick={() => onPage(pages)}>{pages}</button>}
+      <button type="button" disabled={page >= pages} onClick={() => onPage(page + 1)}
+        aria-label="Trang sau">›</button></nav></div>;
 }
 
 /**
@@ -75,4 +88,30 @@ export function Field({ label, children, ...props }) {
   const id = children.props.id || generatedId;
   return <div className="field" {...props}><label htmlFor={id}>{label}</label>
     {React.cloneElement(children, { id })}</div>;
+}
+
+/** Returns readable initials for the read-only avatar without requiring a new database field. */
+export function initials(name = '') {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return parts.length ? `${parts[0][0]}${parts.length > 1 ? parts.at(-1)[0] : ''}`.toUpperCase() : '?';
+}
+
+/** Renders persisted KYC state; absent verification is never presented as verified. */
+export function VerificationBadge({ value }) {
+  const labels = { Approved: 'Đã xác minh', Verified: 'Đã xác minh', Pending: 'Chờ xác minh',
+    Rejected: 'Từ chối', NotVerified: 'Chưa xác minh', Unverified: 'Chưa xác minh',
+    Expired: 'Hết hạn', Review: 'Đang xét duyệt' };
+  return <span className={`badge ${value === 'Approved' || value === 'Verified' ? 'Active'
+    : value === 'Rejected' || value === 'Expired' ? 'Suspended' : 'neutral'}`}>
+    {value ? labels[value] || value : 'Không áp dụng'}</span>;
+}
+
+/** Displays the real product image when supplied; missing/broken images use an honest placeholder. */
+export function ProductThumbnail({ src, name }) {
+  const [broken, setBroken] = useState(false);
+  useEffect(() => setBroken(false), [src]);
+  const allowed = typeof src === 'string' && /^(https?:\/\/|\/(?!\/))/.test(src);
+  return <div className="product-thumbnail">{allowed && !broken
+    ? <img src={src} alt={name} onError={() => setBroken(true)} />
+    : <span aria-label={`Chưa có ảnh ${name}`}>Chưa có<br />ảnh</span>}</div>;
 }

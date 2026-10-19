@@ -12,6 +12,7 @@ public sealed class CategoryQueryValidator : AbstractValidator<CategoryQuery>
     public CategoryQueryValidator()
     {
         RuleFor(query => query.Keyword).MaximumLength(100);
+        RuleFor(query => query.Id).GreaterThan(0).When(query => query.Id != null);
         RuleFor(query => query.Page).InclusiveBetween(1, 100000);
         RuleFor(query => query.PageSize).InclusiveBetween(1, 100);
         RuleFor(query => query.ParentId).GreaterThan(0).When(query => query.ParentId != null);

@@ -4,6 +4,9 @@ ASP.NET Core Web API 8.0 giữ bốn project backend theo Report 4. Hiện có c
 UC-ADM-03 (trạng thái tài khoản), UC-ADM-05 (danh mục) và UC-RC-02 (checkout bán lẻ),
 cùng giao diện React. Ba UC đọc/ghi SQL Server trong Development; auth, điểm, phí giao và retry key vẫn giả lập theo yêu cầu.
 
+Cập nhật EF Core Database First: [cấu hình, lệnh scaffold và cách chạy](docs/ef-core-database-first.md).
+Đã lấy 47 entity từ database `AgriSustain`; [đối chiếu giao diện Report 3](docs/three-uc-srs-screen-review.md).
+
 | Project | Package chính |
 | --- | --- |
 | `src/AgriSustain.Api` | `Controllers`, `Security`, `Middlewares` |
@@ -34,10 +37,13 @@ Visual Studio: chọn AgriSustain.Api làm startup project, profile Development 
 
 Logic ba UC đã có trong Domain/Application/API. Có xUnit UT, API/demo integration,
 architecture tests và E2E cho ba màn hình. Selector phiên là fixture, không phải đăng nhập.
-Development mặc định SqlDemo: restart giữ dữ liệu SQL. Auth/điểm/retry-key cache vẫn reset
+Development mặc định SqlServer qua EF Core: restart giữ dữ liệu SQL. Auth/điểm/retry-key cache vẫn reset
 theo mock; Demo chỉ chạy khi Development và Demo:Enabled bật; chưa có JWT/PayOS thật.
 Xem [seed và chạy SQL](database/demo-data-and-web.md), [luồng theo file](docs/three-uc-file-flows.md)
 và [hướng dẫn/đối chiếu test](docs/three-uc-testing-guide-and-report-review.md).
+
+Theo yêu cầu mới, bản EF/UI chỉ build và kiểm tra nhanh trong lúc chờ duyệt code;
+chưa chạy lại bộ unit/integration/E2E chi tiết. Kết quả test cũ không xác nhận bản này.
 
 - [Hướng dẫn chạy, API, comment và thay từng mock](docs/three-uc-demo-and-integration.md).
 - [16 vấn đề database và giải pháp](docs/database-issues-and-solutions.md).

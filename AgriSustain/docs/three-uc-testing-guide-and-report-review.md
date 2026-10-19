@@ -1,5 +1,7 @@
 # Hướng dẫn test và đối chiếu ba report
 
+**Sau khi chuyển EF Core và sửa UI theo Report 3:** chưa chạy lại test chi tiết theo yêu cầu chờ duyệt code. Các kết quả/revision bên dưới là lịch sử trước lần chuyển này, không xác nhận bản EF/UI hiện tại. Xem [phạm vi kiểm tra mới](ef-core-database-first.md).
+
 Ngày rà soát: 19/10/2026. Phạm vi: UC-ADM-03, UC-ADM-05, UC-RC-02.
 
 ## 1. Căn cứ và cách hiểu tài liệu
