@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using AgriSustain.Application.DTOs.Authentication;
 using AgriSustain.Application.Interfaces.Identity;
 using AgriSustain.Application.Interfaces.Repositories;
@@ -9,18 +8,21 @@ namespace AgriSustain.Infrastructure.Services.Authentication;
 
 public class AuthService : IAuthService
 {
-    private readonly IAccountRepository _accountRepository;
+    private readonly IIdentityAccountRepository _accountRepository;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly JwtOptions _jwtOptions;
+    private readonly IPasswordHasher _passwordHasher;
 
     public AuthService(
-        IAccountRepository accountRepository,
+        IIdentityAccountRepository accountRepository,
         IJwtTokenService jwtTokenService,
-        IOptions<JwtOptions> jwtOptions)
+        IOptions<JwtOptions> jwtOptions,
+        IPasswordHasher passwordHasher)
     {
         _accountRepository = accountRepository;
         _jwtTokenService = jwtTokenService;
         _jwtOptions = jwtOptions.Value;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
@@ -34,7 +36,7 @@ public class AuthService : IAuthService
         if (account is null ||
             !account.IsActive ||
             account.LockedUntil > DateTime.UtcNow ||
-            !VerifyPassword(request.Password, account.PasswordHash))
+            !_passwordHasher.Verify(request.Password, account.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid email or password.");
         }
@@ -87,14 +89,4 @@ public class AuthService : IAuthService
         };
     }
 
-    private static bool VerifyPassword(string inputPassword, string storedHash)
-    {
-        if (string.IsNullOrEmpty(storedHash) ||
-            !Regex.IsMatch(storedHash, @"\A\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}\z", RegexOptions.CultureInvariant))
-        {
-            return false;
-        }
-
-        return BCrypt.Net.BCrypt.Verify(inputPassword, storedHash);
-    }
 }

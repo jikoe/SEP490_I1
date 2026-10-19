@@ -2,6 +2,7 @@ using AgriSustain.Application.DTOs.Authentication;
 using AgriSustain.Application.Interfaces.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
 namespace AgriSustain.Api.Controllers;
@@ -21,6 +22,7 @@ public class AuthenticationController : ControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting("Credentials")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request, CancellationToken cancellationToken)
     {
         LoginResponseDto response;
@@ -90,7 +92,7 @@ public class AuthenticationController : ControllerBase
         Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
+            Secure = Request.IsHttps,
             SameSite = SameSiteMode.Lax,
             Expires = expiresAt,
             IsEssential = true,

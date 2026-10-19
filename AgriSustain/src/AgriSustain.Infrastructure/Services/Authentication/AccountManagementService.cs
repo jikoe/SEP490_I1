@@ -8,11 +8,11 @@ namespace AgriSustain.Infrastructure.Services.Authentication;
 
 public class AccountManagementService : IAccountManagementService
 {
-    private readonly IAccountRepository _accountRepository;
+    private readonly IIdentityAccountRepository _accountRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public AccountManagementService(
-        IAccountRepository accountRepository,
+        IIdentityAccountRepository accountRepository,
         IUnitOfWork unitOfWork)
     {
         _accountRepository = accountRepository;

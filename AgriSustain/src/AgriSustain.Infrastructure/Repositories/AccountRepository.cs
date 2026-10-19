@@ -1,5 +1,3 @@
-using AgriSustain.Application.Common;
-using AgriSustain.Application.DTOs.Administration;
 using AgriSustain.Application.Interfaces.Repositories;
 using AgriSustain.Domain.Entities.Accounts;
 using AgriSustain.Infrastructure.Data.Contexts;
@@ -7,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AgriSustain.Infrastructure.Repositories;
 
-public class AccountRepository : IAccountRepository
+public class AccountRepository : IIdentityAccountRepository
 {
     private readonly AppDbContext _dbContext;
 
@@ -39,19 +37,4 @@ public class AccountRepository : IAccountRepository
         return Task.CompletedTask;
     }
 
-    public Task<UserAccount?> FindAsync(long id, CancellationToken cancellationToken)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<PagedResponse<UserResponse>> SearchAsync(
-        UserQuery query, DateTimeOffset now, CancellationToken cancellationToken)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task SaveAsync(UserAccount account, CancellationToken cancellationToken)
-    {
-        throw new NotSupportedException();
-    }
 }

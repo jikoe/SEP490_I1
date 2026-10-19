@@ -26,6 +26,7 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
         }
 
         bool domainFailure = exception is BusinessRuleException;
+        bool passwordFailure = context.Request.Path == "/api/passwords/change";
         bool unavailableDatabase = exception is SqlException sql
             && (sql.Class >= 20 || sql.Number is -2 or -1 or 2 or 53 or 4060 or 18456);
         if (!domainFailure)
@@ -38,10 +39,12 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
         await context.Response.WriteAsJsonAsync(new ProblemDetails
         {
             Status = context.Response.StatusCode,
-            Title = domainFailure ? exception.Message : unavailableDatabase
+            Title = passwordFailure ? "Không thể đổi mật khẩu. Vui lòng thử lại sau."
+                : domainFailure ? exception.Message : unavailableDatabase
                 ? "Không kết nối được cơ sở dữ liệu. Kiểm tra SQL Server/LocalDB rồi tải lại."
                 : "Không thể xử lý. Vui lòng thử lại.",
-            Extensions = { ["code"] = domainFailure ? "BUSINESS_CONFLICT"
+            Extensions = { ["code"] = passwordFailure ? "MSG07"
+                    : domainFailure ? "BUSINESS_CONFLICT"
                     : unavailableDatabase ? "DATABASE_UNAVAILABLE" : "SERVER_ERROR",
                 ["traceId"] = context.TraceIdentifier }
         }, cancellationToken);
