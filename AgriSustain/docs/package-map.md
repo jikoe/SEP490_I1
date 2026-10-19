@@ -1,5 +1,7 @@
 # Ánh xạ Package Diagram Report 4
 
+Cập nhật EF Core Database First: [cấu hình và scaffold](ef-core-database-first.md), [đối chiếu màn hình Report 3](three-uc-srs-screen-review.md). Bản EF/UI mới chỉ build và xem nhanh; kết quả test chi tiết cũ chưa xác nhận bản mới.
+
 Bảng này ánh xạ đúng 18 package con của sơ đồ đã chốt. Tên lớp là quy ước cho implementation sau này; bộ khung hiện chưa triển khai nghiệp vụ.
 
 | Layer | Package | Thư mục code | Trách nhiệm | Quy ước lớp |
@@ -37,12 +39,28 @@ Bảng này ánh xạ đúng 18 package con của sơ đồ đã chốt. Tên l�
 
 Namespace đi theo project và đường dẫn, ví dụ `AgriSustain.Application.Services.Orders` hoặc `AgriSustain.Infrastructure.Repositories`. Các hợp đồng Unit of Work đặt ở `Application/Interfaces/UnitOfWork`, implementation đặt ở `Infrastructure/UnitOfWork`.
 
-`Program.cs` gọi `AddApplication()` và `AddInfrastructure(configuration)`. Các extension class nằm tại gốc project Api/Infrastructure để không tạo package ngoài sơ đồ. Hai hàm hiện chỉ là điểm đăng ký, chưa cấu hình JWT, database hoặc dịch vụ tích hợp.
+`Program.cs` gọi `AddApplication()` và `AddInfrastructure(configuration, isDevelopment)`.
+Các extension ở gốc Api/Infrastructure. Hiện đăng ký nghiệp vụ ba UC, validators và demo
+adapters có guard Development; chưa có JWT/SQL/provider thật.
 
 `Data/Contexts`, `Data/Configurations`, `Data/Migrations`, `Payments/PayOS`, `Email/Gmail` và các thư mục feature chỉ là nhóm con của package tương ứng. `Properties` trong Api phục vụ Visual Studio. Không thêm Domain Enums, DomainServices hay ValueObjects khi chưa sử dụng.
 
-Các thư mục `Caching` và `Identity` dưới Interfaces là vị trí hợp đồng dự kiến được giữ lại từ bộ khung cũ; chưa có implementation tương ứng.
+Identity có ICurrentUser và ranh giới đọc fixture của demo. Caching còn là dự kiến.
+Domain bổ sung ValueObjects (address/order/seller snapshots) và Exceptions để bảo vệ invariant;
+Application thêm các nhóm Administration trong Services/DTOs/Validators. Mock persistence ở
+Infrastructure/Data/Demo, Repositories/Demo và UnitOfWork, không nằm trong Domain/Application.
+Chi tiết điểm thay mock: [three-uc-demo-and-integration.md](three-uc-demo-and-integration.md).
+
+Catalog địa giới checkout nằm ở `Infrastructure/Data/Geography` trong package Data sẵn có;
+`IAddressCatalog` ở Application/Interfaces/Services. Domain thêm BatchAllocationSnapshot
+trong ValueObjects để một dòng hàng tham chiếu nhiều lô. Không thêm project/backend layer.
 
 ## Nguồn
 
 - Report 4: https://docs.google.com/document/d/1gRUQwJAMfWAywcQd9lA82P-DaHC4E1s9/edit
+
+
+Cập nhật19/10: feature labels theo Tracking là **Administration** (ADM03/ADM05) và
+**Consumer Ordering** (RC02), actor vẫn RetailCustomer. Giữ namespaces Report4.
+Development chọn SQL repositories trong `Repositories/EfCore` và `EfThreeUcUnitOfWork`;
+`DemoUnitOfWork/DemoSession` phục vụ test InMemory riêng. Điểm/auth/policy/retry vẫn mock.
