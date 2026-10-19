@@ -20,14 +20,36 @@
 }
 
 .customer-header-container {
-  max-width: 1280px;
+  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
-  padding: 0 24px;
-  height: 74px;
+  padding: 0 32px;
+  height: 76px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
   gap: 20px;
+  flex-shrink: 0;
+}
+
+.header-center {
+  flex: 1;
+  max-width: 580px;
+  margin: 0 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
 }
 
 .brand-group {
@@ -123,22 +145,24 @@
 
 .header-search {
   position: relative;
-  width: 240px;
+  width: 100%;
 }
 
 .header-search input {
-  padding: 8px 12px 8px 34px;
-  font-size: 12.5px;
-  border-radius: 20px;
+  width: 100%;
+  padding: 10px 18px 10px 42px;
+  font-size: 13.5px;
+  border-radius: 24px;
   background: #f1f6f2;
-  border: 1px solid #dbe6de;
+  border: 1.5px solid #d0e0d5;
   transition: all 0.2s ease;
 }
 
 .header-search input:focus {
   background: #ffffff;
-  border-color: #2d8a5e;
-  width: 270px;
+  border-color: #1e6546;
+  box-shadow: 0 0 0 3px rgba(30, 101, 70, 0.15);
+  width: 100%;
 }
 
 .header-search .search-icon {

@@ -4,61 +4,45 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
 
-  const navLinks = [
-    { label: 'Trang chủ', route: '#/orders' },
-    { label: 'Đơn mua của tôi', route: '#/orders', badge: '3' },
-  ];
-
   return (
     <header className="customer-header">
       <div className="customer-header-container">
-        {/* Brand Logo */}
-        <div className="brand-group" onClick={() => navigate('/orders')} style={{ cursor: 'pointer' }}>
-          <div className="brand-leaf-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-            </svg>
+        {/* 1. KHỐI TRÁI: Logo thương hiệu & Trang chủ */}
+        <div className="header-left">
+          <div className="brand-group" onClick={() => navigate('/orders')} style={{ cursor: 'pointer' }}>
+            <div className="brand-leaf-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+              </svg>
+            </div>
+            <div>
+              <div className="brand-title">Nông Sản Việt</div>
+              <div className="brand-tagline">AGRISUSTAIN · MINH BẠCH NGUỒN GỐC</div>
+            </div>
           </div>
-          <div>
-            <div className="brand-title">Nông Sản Việt</div>
-            <div className="brand-tagline">AGRISUSTAIN · MINH BẠCH NGUỒN GỐC</div>
-          </div>
+
+          <nav className="customer-nav" style={{ marginLeft: 16 }}>
+            <a
+              href="#/orders"
+              className={`nav-item ${currentRoute === '/orders' ? 'active' : ''}`}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/orders');
+              }}
+            >
+              Trang chủ
+            </a>
+          </nav>
         </div>
 
-        {/* Header Navigation Items */}
-        <nav className="customer-nav">
-          {navLinks.map((item, index) => {
-            const isActive =
-              (item.route === '#/orders' && (currentRoute === '/orders' && item.label === 'Đơn mua của tôi')) ||
-              (item.route === '#/profile' && currentRoute === '/profile' && item.label === 'Nông trại & HTX');
-
-            return (
-              <a
-                key={index}
-                href={item.route}
-                className={`nav-item ${isActive ? 'active' : ''} ${item.highlight ? 'highlight-pill' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate(item.route.replace('#', ''));
-                }}
-              >
-                {item.highlight && <span className="qr-icon">🔍</span>}
-                {item.label}
-                {item.badge && <span className="nav-badge">{item.badge}</span>}
-              </a>
-            );
-          })}
-        </nav>
-
-        {/* Right Action Icons & User Account */}
-        <div className="header-actions">
-          {/* Search box */}
+        {/* 2. KHỐI GIỮA: Thanh tìm kiếm rộng rãi căn giữa */}
+        <div className="header-center">
           <div className="header-search">
             <span className="search-icon">🔍</span>
             <input
               type="text"
-              placeholder="Tìm kiếm nông sản, mã lô QR..."
+              placeholder="Tìm kiếm nông sản, mã lô QR, nhà vườn..."
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyDown={(e) => {
@@ -68,8 +52,11 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
               }}
             />
           </div>
+        </div>
 
-          {/* Cart Icon */}
+        {/* 3. KHỐI PHẢI: Giỏ hàng & Menu người dùng dạt hẳn về bên phải */}
+        <div className="header-right">
+          {/* Giỏ hàng */}
           <div
             className="cart-button"
             title="Giỏ hàng nông sản"
@@ -80,7 +67,7 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
             <span className="cart-count">2</span>
           </div>
 
-          {/* User Account / Auth buttons */}
+          {/* Menu tài khoản người dùng */}
           {currentRoute === '/register' ? (
             <div className="auth-buttons">
               <button
@@ -168,18 +155,6 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
                       Nông dân
                     </button>
                   </div>
-                  <div className="menu-divider" />
-                  <a
-                    href="#/administration/users"
-                    className="admin-link"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setUserMenuOpen(false);
-                      navigate('/administration/users');
-                    }}
-                  >
-                    ⚙️ Chuyển sang Quản trị (Admin)
-                  </a>
                 </div>
               )}
             </div>
