@@ -1,11 +1,17 @@
-using AgriSustain.Application.Interfaces.Identity;
-using AgriSustain.Application.Interfaces.Repositories;
-using AgriSustain.Infrastructure.Data.Contexts;
-using AgriSustain.Infrastructure.Repositories;
-using AgriSustain.Infrastructure.Security.Authentication;
-using AgriSustain.Infrastructure.Services.Authentication;
-using AgriSustain.Infrastructure.UnitOfWork;
-using Microsoft.EntityFrameworkCore;
+using AgriSustain.Application.DTOs.Administration;
+using AgriSustain.Application.DTOs.Authentication;
+using AgriSustain.Application.DTOs.Orders;
+using AgriSustain.Application.DTOs.Profiles;
+using AgriSustain.Application.Interfaces.Services;
+using AgriSustain.Application.Services.Administration;
+using AgriSustain.Application.Services.Authentication;
+using AgriSustain.Application.Services.Orders;
+using AgriSustain.Application.Services.Profiles;
+using AgriSustain.Application.Validators.Administration;
+using AgriSustain.Application.Validators.Authentication;
+using AgriSustain.Application.Validators.Orders;
+using AgriSustain.Application.Validators.Profiles;
+using FluentValidation;
 
 namespace AgriSustain.Api;
 
@@ -13,6 +19,27 @@ public static class ApplicationServiceCollectionExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddScoped<IAccountStatusService, AccountStatusService>();
+        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<ICheckoutService, CheckoutService>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IProfileService, ProfileService>();
+        services.AddScoped<IOrderTrackingService, OrderTrackingService>();
+
+        services.AddScoped<IValidator<UserQuery>, UserQueryValidator>();
+        services.AddScoped<IValidator<AccountActionRequest>, AccountActionValidator>();
+        services.AddScoped<IValidator<CategoryQuery>, CategoryQueryValidator>();
+        services.AddScoped<IValidator<SaveCategoryRequest>, SaveCategoryValidator>();
+        services.AddScoped<IValidator<CheckoutInput>, CheckoutInputValidator>();
+        services.AddScoped<IValidator<PlaceOrderRequest>, PlaceOrderValidator>();
+
+        services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
+        services.AddScoped<IValidator<VerifyOtpRequest>, VerifyOtpRequestValidator>();
+        services.AddScoped<IValidator<ResendOtpRequest>, ResendOtpRequestValidator>();
+        services.AddScoped<IValidator<UpdateConsumerProfileRequest>, UpdateConsumerProfileValidator>();
+        services.AddScoped<IValidator<UpdateFarmerProfileRequest>, UpdateFarmerProfileValidator>();
+        services.AddScoped<IValidator<OrderQuery>, OrderQueryValidator>();
+
         return services;
     }
 }
