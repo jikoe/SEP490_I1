@@ -8,6 +8,9 @@ public interface IProfileService
     Task<Result<UserProfileResponse>> GetCurrentProfileAsync(
         CancellationToken cancellationToken);
 
+    Task<Result<UserProfileResponse>> GetProfileByIdAsync(
+        long userId, CancellationToken cancellationToken);
+
     Task<Result<UserProfileResponse>> UpdateConsumerProfileAsync(
         UpdateConsumerProfileRequest request, CancellationToken cancellationToken);
 

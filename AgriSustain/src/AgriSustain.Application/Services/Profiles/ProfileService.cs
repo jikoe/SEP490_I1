@@ -33,6 +33,17 @@ public sealed class ProfileService(
                 : Result<UserProfileResponse>.Success(profile);
         }, cancellationToken);
 
+    public Task<Result<UserProfileResponse>> GetProfileByIdAsync(
+        long userId, CancellationToken cancellationToken) =>
+        unitOfWork.ReadAsync(async session =>
+        {
+            var profile = await session.Profiles.GetProfileAsync(userId, cancellationToken);
+            return profile == null
+                ? Result<UserProfileResponse>.Failure(new Error(
+                    "USER_NOT_FOUND", $"Không tìm thấy thông tin hồ sơ cho người dùng ID {userId}.", "NotFound"))
+                : Result<UserProfileResponse>.Success(profile);
+        }, cancellationToken);
+
     public async Task<Result<UserProfileResponse>> UpdateConsumerProfileAsync(
         UpdateConsumerProfileRequest request, CancellationToken cancellationToken)
     {

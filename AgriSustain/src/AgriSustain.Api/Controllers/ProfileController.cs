@@ -14,6 +14,19 @@ public sealed class ProfileController(IProfileService service) : ControllerBase
     public async Task<IActionResult> GetProfile(CancellationToken cancellationToken) =>
         ApiResults.From(await service.GetCurrentProfileAsync(cancellationToken), HttpContext);
 
+    [HttpGet("{userId:long}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetProfileById(
+        long userId, CancellationToken cancellationToken) =>
+        ApiResults.From(await service.GetProfileByIdAsync(userId, cancellationToken), HttpContext);
+
+    [HttpGet("farmer/{userId:long}")]
+    [HttpGet("famer/{userId:long}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetFarmerProfile(
+        long userId, CancellationToken cancellationToken) =>
+        ApiResults.From(await service.GetProfileByIdAsync(userId, cancellationToken), HttpContext);
+
     [HttpPut("consumer")]
     public async Task<IActionResult> UpdateConsumerProfile(
         [FromBody] UpdateConsumerProfileRequest request, CancellationToken cancellationToken) =>
