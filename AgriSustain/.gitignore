@@ -1,13 +1,21 @@
+# Visual Studio / .NET
+.vs/
 **/bin/
 **/obj/
-.vs/
-.dotnet-cli/
-frontend/node_modules/
-frontend/dist/
-frontend/test-results/
-frontend/playwright-report/
 *.user
-**/appsettings.Local.json
+*.suo
+
+# Frontend
+**/node_modules/
+**/dist/
+**/build/
+**/.next/
+
+# Cấu hình riêng và mật khẩu
 .env
 .env.*
 !.env.example
+**/appsettings.Development.json
+
+# Log
+*.log
