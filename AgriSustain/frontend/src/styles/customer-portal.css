@@ -566,3 +566,25 @@
   justify-content: space-between;
   align-items: center;
 }
+
+/* ========================================================================= */
+/* BULLETPROOF MODAL CENTERING (FIX TAILWIND V4 PREFLIGHT TOP-LEFT ISSUE)    */
+/* ========================================================================= */
+dialog[open] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  z-index: 9999;
+  border: 1px solid #dce5da;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+}
+
+dialog::backdrop {
+  background: rgba(18, 43, 31, 0.55);
+  backdrop-filter: blur(4px);
+}
+
