@@ -1,9 +1,15 @@
-import { Navigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { LoginPage } from '../../features/authentication/LoginPage';
+import { ProductListingModerationPage } from '../../features/moderation/ProductListingModerationPage';
 
 function DashboardPage() {
   const { user, logout } = useAuth();
+  const [showModeration, setShowModeration] = useState(false);
+
+  if (showModeration) {
+    return <ProductListingModerationPage onBack={() => setShowModeration(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 p-6">
@@ -35,6 +41,22 @@ function DashboardPage() {
             <p className="text-sm text-slate-500">Email</p>
             <p className="mt-2 text-xl font-semibold text-slate-900">{user?.email}</p>
           </div>
+          {user?.role === 'Admin' || user?.role === 'Staff' || user?.role === 'Content Moderator' ? (
+            <button
+              type="button"
+              onClick={() => setShowModeration(true)}
+              className="group rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-left transition hover:border-emerald-400 hover:bg-emerald-100 md:col-span-2"
+            >
+              <p className="text-sm font-medium text-emerald-700">Administration / Moderation</p>
+              <p className="mt-2 text-xl font-semibold text-slate-900">Product Listing Moderation</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Review submitted product listings and make moderation decisions.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                Open moderation <span aria-hidden="true" className="transition group-hover:translate-x-1">→</span>
+              </span>
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
