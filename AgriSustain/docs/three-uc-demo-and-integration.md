@@ -7,9 +7,9 @@ và batch chọn trong giỏ. Xem [kiểm tra hàm/comment](three-uc-code-review
 ## 1. Trạng thái chạy
 
 Database `(localdb)\MSSQLLocalDB / AgriSustain` đã có 47 bảng, xem
-[bộ SQL](../database/README.md). API **chưa nối SQL**, vẫn dùng adapter trong bộ nhớ theo
-ủy quyền giả lập các phần chưa có. Restart làm mất thay đổi/đơn/audit. Semaphore chỉ bảo
-vệ một process. Địa giới là catalog JSON thật được đóng gói local, không phải carrier API.
+[bộ SQL](../database/README.md). Cập nhật 19/10: Development mặc định SqlDemo, ba UC đọc/ghi
+SQL bền vững. Auth, điểm, phí/phạm vi giao, retry cache vẫn giả lập; restart reset các mock.
+Địa giới dùng JSON local thật. [Seed/run chi tiết](../database/demo-data-and-web.md).
 
 Không có login, cart CRUD, product/voucher/loyalty management, QR/webhook, expiry worker
 hoặc refund. Không đăng ký demo trong Production hoặc tự bỏ Development guard.
@@ -41,17 +41,14 @@ dotnet run --project tools/CommentAudit -- check .
 
 | Header | ID / role | Phạm vi |
 | --- | --- | --- |
-| Authorization: Demo admin | 1 / SystemAdmin | Hai UC quản trị; không tự thao tác trạng thái chính mình |
-| Authorization: Demo retail-customer | 10 / RetailCustomer | Giỏ sản phẩm mẫu hai seller và địa chỉ đã lưu |
-| Authorization: Demo other-retail-customer | 11 / RetailCustomer | Giỏ đối chứng để kiểm tra ownership/stock cạnh tranh |
-| Authorization: Demo support | 13 / CustomerSupport | Không tự được cấp quyền hai UC quản trị; chờ ma trận auth được chốt |
+| Authorization: Demo admin | SQL username demo3uc_admin / SystemAdmin | Hai UC quản trị; không tự thao tác trạng thái chính mình |
+| Authorization: Demo retail-customer | SQL username demo3uc_retail / RetailCustomer | Giỏ sản phẩm mẫu hai seller và địa chỉ đã lưu |
+| Authorization: Demo other-retail-customer | SQL username demo3uc_retail_other / RetailCustomer | Giỏ đối chứng để kiểm tra ownership/stock cạnh tranh |
+| Authorization: Demo support | SQL username demo3uc_support / CustomerSupport | Không tự được cấp quyền hai UC quản trị; chờ ma trận auth được chốt |
 
-Fixture selector không phải credential. User 2 là quản trị dự phòng; 12 khóa tạm; 31
-suspended. Suspend User 10 làm phiên fixture cũ mất hiệu lực kể cả sau activate; restart
-seed phiên mới. SessionVersion là trạng thái mock thu hồi phiên, không phải cột SQL Version.
-
-WELCOME10 giảm 10%, tối đa 50.000, minimum 100.000; RAUXANH20 giảm 20.000 cho seller 20.
-Khách mẫu: hàng 205.000 + shipping 40.000 - voucher 20.500 - 100 điểm × 100 = 214.500.
+Fixture selector không phải credential. SQL ID được lookup bằng username, không cố định.
+Danh sách seed cụ thể và voucher `DEMO3UC-WELCOME10` / `DEMO3UC-RAUXANH20` xem hướng dẫn seed.
+SessionVersion chỉ là trạng thái thu hồi phiên mock, không phải cột SQL Version.
 Tỷ lệ điểm/cap 20%, vùng phục vụ 11/12, shipping 30.000/60.000 + seller thêm 10.000 và hạn
 5/15 phút vẫn là fixture. Commission thường 2% đã ghi nhận nhưng khác shipping; chưa tự
 cộng vào tiền khách hoặc tạo policy gói khi cơ sở/bên chịu phí chưa chốt.
@@ -103,12 +100,12 @@ chế này làm cam kết idempotency bền vững hoặc nhiều server.
 | Adapter | Hợp đồng cần giữ / việc cần thay |
 | --- | --- |
 | DemoAuthenticationHandler/HttpCurrentUser/DemoUnitOfWork.FindAsync | JWT/session thật và ma trận permission/target, vẫn recheck trạng thái và ownership; chưa viết auth UC |
-| DemoUnitOfWork/DemoSession | Repository SQL có paging, scoped transaction mutation+audit+stock+cart+benefits; không tự SaveChanges từng bước; identity do DB tạo |
-| Cart/catalog fixture | Read-only từ module cart/product; CartItem không có batch; query candidate HarvestBatch theo product, không lấy batch đầu tiên |
-| Demo category policy references | Query Category con, RegionalPriceBenchmark, CommissionPolicy thật, giữ NO ACTION FK chống cạnh tranh |
+| SqlThreeUcUnitOfWork/SqlThreeUcSession | Đã có SQL paging/transaction/identity/audit/reservation; production cần review lock ordering, timeout và throughput |
+| SQL cart/catalog read seam | Đọc bảng thật, chỉ xóa selected cart trong Place; module cart CRUD/product management vẫn ngoài scope |
+| SQL category references | Đã query child/Product/RegionalPriceBenchmark/CommissionPolicy thật, giữ NO ACTION FK |
 | VietnamAddressCatalog | Đã dùng JSON thật. Khi cập nhật dữ liệu phải giữ source/license/hash, không tự đổi snapshot đơn cũ hoặc đoán mapping từ tên |
 | DemoCheckoutPolicy delivery | Coverage/carrier/fee/ETA thật; mã địa giới catalog không tự là mã carrier |
-| Demo points/voucher | DB-09 phải chốt storage/policy. Voucher quota tính UsedCount + reservations còn hiệu lực; reserve/apply/release theo OrderId, không triển khai quản lý khuyến mại |
+| Points mock / SQL voucher | DB-09 còn chờ; voucher đọc SQL, ghi Reserved có expiry và quota UsedCount+liveReserved; apply/release/payment worker chưa triển khai |
 | Demo retry | Chốt DB-06 trước khi viết SQL lookup/unique; không tự giả định RequestKey/RequestHash tồn tại |
 | GetPaymentDestination | Null tới khi module thanh toán cung cấp handoff; không tạo QR hoặc gọi PayOS ở UC-RC-02 |
 | Money/durations | Chốt rounding, cap, stacking và các thời hạn; không xem cấu hình fixture là đồng ý nghiệp vụ |

@@ -21,3 +21,9 @@ Xem [hướng dẫn chạy/tích hợp](../docs/three-uc-demo-and-integration.md
 
 Sau review DB: xem [code/comment và kết quả kiểm tra](../docs/three-uc-code-review.md).
 Các hàm đã có XML/JSDoc; contract mới bỏ ảnh/archive/Version, dùng RetailCustomer và FEFO.
+
+Development API mặc định SqlDemo: ba màn đọc dữ liệu SQL đã seed. App hiển thị mode lấy
+qua /health, danh mục/tài khoản/checkout giữ dữ liệu sau restart; auth/points/policy/retry
+vẫn là mock. Feature tracking: Administration và Consumer Ordering; actor RetailCustomer.
+Các thư mục router/providers/session/access ở trên là điểm tích hợp dự kiến; SPA hiện
+chọn trực tiếp ba màn qua App.jsx, chưa có session provider hoặc JWT thật.

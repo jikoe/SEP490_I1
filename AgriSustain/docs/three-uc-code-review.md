@@ -105,3 +105,11 @@ string vào appsettings. Không gỡ guard demo hoặc công bố API đã lưu 
   nhận policy này. Tồn hết hạn/không bán được bị loại khỏi phân bổ.
 - Cart CRUD, quản lý product/voucher/điểm, gateway/QR, webhook, worker expiry và refund
   vẫn thuộc module khác; ba UC chỉ tiêu thụ các hợp đồng cần thiết.
+
+## Cập nhật SQL 19/10/2026
+
+Đã nối SqlThreeUcUnitOfWork/SqlThreeUcSession cho đúng ba UC. Bảng và luồng chi tiết ở
+[luồng theo file](three-uc-file-flows.md). Các phát biểu chưa SQL ở phần lịch sử18/10
+không còn mô tả runtime Development hiện tại. Auth/points/fee/retry vẫn mock, có giới hạn
+restart và hướng thay trong XML/JSDoc. Audit comment:288 khai báo C# có tài liệu,0 thiếu;
+25 hàm frontend có JSDoc,0 thiếu. Bộ52test cũ và4SQL/4E2E đã đạt sau sửa lỗi tìm/phân trang.

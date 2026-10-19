@@ -16,6 +16,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'dotnet run --project ../src/AgriSustain.Api --configuration Release --no-build --no-restore',
+      env: { Persistence__Mode: 'InMemory' },
       url: 'http://localhost:5179/health',
       reuseExistingServer: false,
       timeout: 45000,

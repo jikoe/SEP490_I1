@@ -4,6 +4,7 @@ using AgriSustain.Application.Interfaces.UnitOfWork;
 using AgriSustain.Infrastructure.Data.Demo;
 using AgriSustain.Infrastructure.Data.Geography;
 using AgriSustain.Infrastructure.Repositories.Demo;
+using AgriSustain.Infrastructure.Repositories.Sql;
 using AgriSustain.Infrastructure.UnitOfWork;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,14 +15,14 @@ public static class InfrastructureServiceCollectionExtensions
 {
     /// <summary>
     /// Requires Development plus explicit Demo opt-in, validates provisional commerce options,
-    /// and registers isolated mock persistence/policies together with the real local geography
+    /// and explicitly selects SQL or isolated memory persistence, mock policies and real geography
     /// catalog. It never silently selects mocks in Production.
     /// </summary>
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services, IConfiguration configuration, bool isDevelopment)
     {
-        // DEMO-GUARD: simulations are opt-in and Development-only. A real SQL/JWT adapter
-        // must be registered explicitly by the team; never silently fall back to fixtures.
+        // DEMO-GUARD: SQL persists business data, but auth/policy dependencies remain local
+        // simulations. Both persistence modes require opt-in Development; no fallback.
         if (!isDevelopment || !configuration.GetValue<bool>("Demo:Enabled"))
         {
             throw new InvalidOperationException(
@@ -37,11 +38,29 @@ public static class InfrastructureServiceCollectionExtensions
                 && options.QuoteMinutes > 0 && options.ReservationMinutes > 0,
                 "Invalid demo commerce assumptions.").ValidateOnStart();
         services.AddSingleton<TimeProvider>(TimeProvider.System);
-        services.AddSingleton<DemoUnitOfWork>();
-        services.AddSingleton<IThreeUcUnitOfWork>(provider =>
-            provider.GetRequiredService<DemoUnitOfWork>());
-        services.AddSingleton<IDemoIdentityReader>(provider =>
-            provider.GetRequiredService<DemoUnitOfWork>());
+        string mode = configuration["Persistence:Mode"] ?? "InMemory";
+        if (mode == "SqlDemo")
+        {
+            if (string.IsNullOrWhiteSpace(configuration.GetConnectionString("AgriSustain")))
+            {
+                throw new InvalidOperationException("SqlDemo requires ConnectionStrings:AgriSustain.");
+            }
+            services.AddSingleton<SqlDemoDependencies>();
+            services.AddScoped<IThreeUcUnitOfWork, SqlThreeUcUnitOfWork>();
+            services.AddSingleton<IDemoIdentityReader, SqlDemoIdentityReader>();
+        }
+        else if (mode == "InMemory")
+        {
+            services.AddSingleton<DemoUnitOfWork>();
+            services.AddSingleton<IThreeUcUnitOfWork>(provider =>
+                provider.GetRequiredService<DemoUnitOfWork>());
+            services.AddSingleton<IDemoIdentityReader>(provider =>
+                provider.GetRequiredService<DemoUnitOfWork>());
+        }
+        else
+        {
+            throw new InvalidOperationException("Unknown Persistence:Mode; no implicit fallback.");
+        }
         services.AddSingleton<IAddressCatalog, VietnamAddressCatalog>();
         services.AddSingleton<ICheckoutPolicy, DemoCheckoutPolicy>();
         return services;

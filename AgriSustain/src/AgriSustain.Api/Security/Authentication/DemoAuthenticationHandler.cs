@@ -47,6 +47,8 @@ public sealed class DemoAuthenticationHandler(
             return AuthenticateResult.Fail("Invalid or revoked demo fixture session.");
         }
 
+        // UI self-action visibility uses the verified actor, never a presumed SQL IDENTITY.
+        Response.Headers["X-Demo-Actor-Id"] = identity.Value.Id.ToString();
         Claim[] claims =
         [
             new(ClaimTypes.NameIdentifier, identity.Value.Id.ToString()),

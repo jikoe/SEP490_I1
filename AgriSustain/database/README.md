@@ -4,7 +4,7 @@
 Authentication. Database đích đã tồn tại với đúng schema 46 bảng nên dùng migration,
 không tạo lại bảng. Sau cập nhật có **47 bảng**: 46 bảng gốc và `RetailCheckoutQuote`.
 Kiểm tra chính xác tại thời điểm áp dụng: 0 dòng dữ liệu nghiệp vụ. Database 29 bảng
-`AgriSustainDB` không bị thay đổi. Không nhập dữ liệu mẫu vào database ứng dụng.
+`AgriSustainDB` không bị thay đổi. Ngày 19/10 đã bổ sung dữ liệu mẫu theo yêu cầu mới; xem `demo-data-and-web.md`.
 
 Nguồn là file `AgriSustain.sql` người dùng cung cấp, không phải thiết kế UUID/snake_case
 `Database_Design_AgriSustain.sql` ở root workspace. SHA-256 file nguồn:
@@ -81,21 +81,18 @@ Backup trước cập nhật nằm trong `../../tmp/AgriSustain-before-three-uc-
 Log tương ứng: `../../tmp/db-backup-AgriSustain.log`, `db-apply-AgriSustain.log`,
 `db-verify-AgriSustain.log`, và `db-verify-*.log` của database thử.
 
-## 5. Phần còn lại ở code tích hợp
+## 5. Kết nối SQL cho ba UC (19/10/2026)
 
-API **vẫn dùng DemoUnitOfWork và chưa đọc/ghi SQL Server**. Việc thêm schema/index/FK
-không tự thực thi FEFO, reserve/apply/release voucher, thu hồi phiên hoặc audit cùng
-transaction của API. Read model/DTO/UI đã đồng bộ FEFO, danh mục, role và địa chỉ JSON trong review code;
-vẫn cần repository/UoW SQL, auth và policy của nhóm trước khi kiểm thử app với DB thật.
-Xem [review code/comment](../docs/three-uc-code-review.md).
-
-Connection string cho bước tích hợp tiếp theo (Windows Authentication, không có mật khẩu):
+Đã thêm `seed-three-uc-demo.sql`, áp trên AgriSustain sau backup, và nối SQL adapter cho
+UC-ADM-03/ADM-05/RC-02. Development chọn `Persistence:Mode=SqlDemo`; không tự fallback.
+Repository/UoW dùng parameterized SQL, Serializable transaction, SQL application lock,
+conditional stock update và audit cùng transaction. Không dùng EF hoặc thay schema mới.
 
 ```text
 Server=(localdb)\MSSQLLocalDB;Database=AgriSustain;Integrated Security=True;TrustServerCertificate=True;
 ```
 
-Chưa sửa appsettings để tránh tạo cảm giác API đã dùng DB khi chưa có adapter SQL.
-Quy tắc Retail/PendingPayment phải được writer retail ghi rõ; default Pending dùng chung
-trong schema gốc vẫn được giữ cho các UC khác. Không chốt thời gian quote/reservation,
-tỷ lệ điểm hoặc ma trận quyền thay cho người phụ trách nghiệp vụ.
+Xem [dữ liệu mẫu/cách chạy](demo-data-and-web.md), [luồng theo file](../docs/three-uc-file-flows.md).
+Auth, điểm, phí/vùng giao và request-key retry vẫn có mock đã comment; apply/release/expiry
+và payment thuộc phụ thuộc chưa triển khai. SQL không tự giải quyết DB-06/DB-09.
+Bốn SQL integration tests dùng database GUID tự tạo/xóa, không target database ứng dụng.

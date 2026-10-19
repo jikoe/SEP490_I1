@@ -56,3 +56,9 @@ trong ValueObjects để một dòng hàng tham chiếu nhiều lô. Không thê
 ## Nguồn
 
 - Report 4: https://docs.google.com/document/d/1gRUQwJAMfWAywcQd9lA82P-DaHC4E1s9/edit
+
+
+Cập nhật19/10: feature labels theo Tracking là **Administration** (ADM03/ADM05) và
+**Consumer Ordering** (RC02), actor vẫn RetailCustomer. Giữ namespaces Report4.
+Development chọn SQL repositories trong `Repositories/Sql` và `SqlThreeUcUnitOfWork`;
+`DemoUnitOfWork/DemoSession` phục vụ test InMemory riêng. Điểm/auth/policy/retry vẫn mock.

@@ -1,9 +1,11 @@
 using System.Net.Http.Headers;
 using AgriSustain.Application.Interfaces.UnitOfWork;
+using AgriSustain.Application.Interfaces.Identity;
 using AgriSustain.Infrastructure.Data.Demo;
 using AgriSustain.Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -28,8 +30,14 @@ internal sealed class ApiFactory(Action<DemoState>? configureSeed = null,
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
+        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(
+            new Dictionary<string, string?> { ["Persistence:Mode"] = "InMemory" }));
         builder.ConfigureServices(services =>
         {
+            services.RemoveAll<IThreeUcUnitOfWork>();
+            services.RemoveAll<IDemoIdentityReader>();
+            services.AddSingleton<IThreeUcUnitOfWork>(provider => provider.GetRequiredService<DemoUnitOfWork>());
+            services.AddSingleton<IDemoIdentityReader>(provider => provider.GetRequiredService<DemoUnitOfWork>());
             services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
             services.Replace(ServiceDescriptor.Singleton<DemoUnitOfWork>(_ =>
             {

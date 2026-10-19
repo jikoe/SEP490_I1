@@ -118,4 +118,20 @@ public sealed class UserAccount
     /// credential material is present in this entity.
     /// </summary>
     public UserAccount Copy() => (UserAccount)MemberwiseClone();
+
+    /// <summary>
+    /// Restores trusted persisted business/lock state without executing a transition or audit.
+    /// Session version remains an external mock projection, never an assumed dbo.User column.
+    /// </summary>
+    public static UserAccount RestorePersisted(
+        UserAccount account, string status, DateTimeOffset? lockedUntil,
+        int failedCount, int mockSessionVersion)
+    {
+        var restored = account.Copy();
+        restored.Status = status;
+        restored.LockedUntil = lockedUntil;
+        restored.FailedLoginCount = failedCount;
+        restored.SessionVersion = mockSessionVersion;
+        return restored;
+    }
 }

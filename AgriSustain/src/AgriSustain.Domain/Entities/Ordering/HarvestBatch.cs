@@ -72,4 +72,19 @@ public sealed class HarvestBatch
     /// affecting the committed batch.
     /// </summary>
     public HarvestBatch Copy() => (HarvestBatch)MemberwiseClone();
+
+    /// <summary>
+    /// Rehydrates both SQL counters without reserving stock again. The adapter supplies trusted
+    /// persisted identity and eligibility fields; negative reserved quantity is rejected.
+    /// </summary>
+    public static HarvestBatch RestorePersisted(HarvestBatch batch, decimal reserved)
+    {
+        if (reserved < 0)
+        {
+            throw new BusinessRuleException("Tồn giữ không được âm.");
+        }
+        var restored = batch.Copy();
+        restored.ReservedQuantity = reserved;
+        return restored;
+    }
 }

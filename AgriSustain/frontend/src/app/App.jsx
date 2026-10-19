@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import UsersScreen from '../features/administration/UsersScreen';
 import CategoriesScreen from '../features/administration/CategoriesScreen';
 import CheckoutScreen from '../features/orders/CheckoutScreen';
@@ -11,6 +11,13 @@ export default function App() {
   const [fixture, setFixture] = useState('admin');
   const [screen, setScreen] = useState('users');
   const admin = fixture === 'admin';
+  const [persistence, setPersistence] = useState(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/health', { signal: controller.signal }).then((response) => response.json())
+      .then((health) => setPersistence(health.persistence)).catch(() => {});
+    return () => controller.abort();
+  }, []);
   /**
    * Switches the public demo identity and resets the visible screen so administrator and
    * RetailCustomer contexts do not share stale component state.
@@ -35,11 +42,14 @@ export default function App() {
         onChange={(event) => selectFixture(event.target.value)}><option value="admin">SystemAdmin demo</option>
         <option value="retail-customer">RetailCustomer demo</option>
         <option value="other-retail-customer">RetailCustomer đối chứng</option></select></label></header>
-      <div className="demo-strip"><strong>Dữ liệu giả lập</strong><span>Phiên đăng nhập, giỏ hàng,
-        chính sách giao hàng và điểm thưởng là mẫu. Dữ liệu mất khi khởi động lại API.</span></div>
+      <div className="demo-strip"><strong>{persistence === 'SqlDemo' ? 'Dữ liệu SQL Server' : persistence === 'InMemory'
+        ? 'Dữ liệu giả lập' : 'Đang kiểm tra dữ liệu'}</strong><span>{persistence === 'SqlDemo'
+        ? 'Tài khoản, danh mục, giỏ và đơn được lưu SQL. Đăng nhập, điểm, phí giao và retry key vẫn giả lập.'
+        : persistence === 'InMemory' ? 'Dữ liệu trong bộ nhớ mất khi khởi động lại API; các phụ thuộc đang giả lập.'
+          : 'Chờ API xác nhận chế độ lưu trữ.'}</span></div>
       <main key={`${fixture}-${screen}`}>{screen === 'users' && <UsersScreen fixture={fixture} />}
         {screen === 'categories' && <CategoriesScreen fixture={fixture} />}
         {screen === 'checkout' && <CheckoutScreen fixture={fixture} />}</main>
-      <footer>AgriSustain · Administration & RetailCustomer Ordering</footer>
+      <footer>AgriSustain · Administration & Consumer Ordering</footer>
     </div></div>;
 }

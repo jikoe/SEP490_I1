@@ -55,8 +55,12 @@ if (Directory.Exists(frontendPath))
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-// This host health probe does not assert SQL/JWT/provider integration; persistence is still demo.
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "AgriSustain.Api" }));
+// Liveness/configuration only: not a SQL connectivity or external-provider readiness assertion.
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "healthy", service = "AgriSustain.Api",
+    persistence = app.Configuration["Persistence:Mode"] ?? "InMemory"
+}));
 
 app.Run();
 

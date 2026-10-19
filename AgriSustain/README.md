@@ -2,7 +2,7 @@
 
 ASP.NET Core Web API 8.0 giữ bốn project backend theo Report 4. Hiện có code cho đúng ba UC:
 UC-ADM-03 (trạng thái tài khoản), UC-ADM-05 (danh mục) và UC-RC-02 (checkout bán lẻ),
-cùng giao diện React. Các phụ thuộc và persistence dùng giả lập theo yêu cầu, chưa nối SQL Server.
+cùng giao diện React. Ba UC đọc/ghi SQL Server trong Development; auth, điểm, phí giao và retry key vẫn giả lập theo yêu cầu.
 
 | Project | Package chính |
 | --- | --- |
@@ -34,10 +34,13 @@ Visual Studio: chọn AgriSustain.Api làm startup project, profile Development 
 
 Logic ba UC đã có trong Domain/Application/API. Có xUnit UT, API/demo integration,
 architecture tests và E2E cho ba màn hình. Selector phiên là fixture, không phải đăng nhập.
-Restart API xóa thay đổi/đơn/audit và seed lại dữ liệu mẫu. Demo chỉ chạy khi Development
-và Demo:Enabled bật; chưa có EF/SQL, JWT hoặc PayOS thật.
+Development mặc định SqlDemo: restart giữ dữ liệu SQL. Auth/điểm/retry-key cache vẫn reset
+theo mock; Demo chỉ chạy khi Development và Demo:Enabled bật; chưa có JWT/PayOS thật.
+Xem [seed và chạy SQL](database/demo-data-and-web.md), [luồng theo file](docs/three-uc-file-flows.md)
+và [hướng dẫn/đối chiếu test](docs/three-uc-testing-guide-and-report-review.md).
 
 - [Hướng dẫn chạy, API, comment và thay từng mock](docs/three-uc-demo-and-integration.md).
+- [16 vấn đề database và giải pháp](docs/database-issues-and-solutions.md).
 - [Database đã cập nhật và bộ SQL](database/README.md).
 - [Kiểm tra code, comment và điểm tích hợp](docs/three-uc-code-review.md).
 - [Tests](tests/README.md).

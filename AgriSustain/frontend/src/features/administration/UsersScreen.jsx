@@ -63,11 +63,11 @@ export default function UsersScreen({ fixture }) {
    * support usability; server-side actor/target checks remain authoritative.
    */
   const buttons = (user) => <div className="actions">
-    {user.id !== 1 && user.status === 'Active' && <button className="danger-link"
+    {user.id !== result.currentActorId && user.status === 'Active' && <button className="danger-link"
       onClick={() => prepare(user, 'suspend')}>Tạm ngưng</button>}
-    {user.id !== 1 && user.status === 'Suspended' && <button
+    {user.id !== result.currentActorId && user.status === 'Suspended' && <button
       onClick={() => prepare(user, 'activate')}>Kích hoạt lại</button>}
-    {user.id !== 1 && user.isLocked && <button
+    {user.id !== result.currentActorId && user.isLocked && <button
       onClick={() => prepare(user, 'unlock')}>Mở khóa</button>}
   </div>;
 
