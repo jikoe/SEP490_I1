@@ -1,5 +1,10 @@
 # AgriSustain Code Structure
 
+Đã bổ sung **UC-AUTH-06, UC-MKT-01, UC-MKT-02** trên nhánh `ThuongNQ`.
+Mở `/#/marketplace`, chọn sản phẩm để xem chi tiết; đổi mật khẩu tại `/#/change-password`.
+Xem [phạm vi, API, cấu hình và kiểm thử](docs/auth06-marketplace01-02.md).
+Nội dung bên dưới mô tả các UC được triển khai trước đó.
+
 ASP.NET Core Web API 8.0 giữ bốn project backend theo Report 4. Hiện có code cho đúng ba UC:
 UC-ADM-03 (trạng thái tài khoản), UC-ADM-05 (danh mục) và UC-RC-02 (checkout bán lẻ),
 cùng giao diện React. Ba UC đọc/ghi SQL Server trong Development; auth, điểm, phí giao và retry key vẫn giả lập theo yêu cầu.
