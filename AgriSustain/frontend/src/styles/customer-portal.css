@@ -97,9 +97,11 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 8px;
-  color: #3f5549;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #1b4332;
   text-decoration: none;
   font-weight: 600;
   font-size: 13.5px;
@@ -107,14 +109,22 @@
 }
 
 .customer-nav .nav-item:hover {
-  background: #edf5ee;
-  color: #1e6546;
+  background: #edf6f0;
+  border-color: #2d6a4f;
+  color: #133d2a;
+  box-shadow: 0 2px 6px rgba(30, 101, 70, 0.12);
 }
 
 .customer-nav .nav-item.active {
-  background: #e4f1e7;
+  background: transparent;
   color: #1b4332;
   font-weight: 700;
+  border-color: transparent;
+}
+
+.customer-nav .nav-item.active:hover {
+  background: #edf6f0;
+  border-color: #2d6a4f;
 }
 
 .customer-nav .nav-item.highlight-pill {
