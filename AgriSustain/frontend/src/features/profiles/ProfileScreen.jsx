@@ -3,15 +3,15 @@ import { Notice, Field, initials, VerificationBadge } from '../../components/ui/
 
 /**
  * UC-AUTH-03: Manage Profile Screen (SCR-11)
- * Supports RetailCustomer, Farmer, and WholesaleBuyer profiles
+ * Styled with agricultural design language matching Figma SCR-TRC-01
  */
-export default function ProfileScreen({ fixture = 'retail-customer' }) {
+export default function ProfileScreen({ fixture = 'retail-customer', navigate }) {
   const isFarmer = fixture === 'farmer';
   const roleName = isFarmer ? 'Farmer' : 'RetailCustomer';
 
-  // Demo state loaded according to SRS specs
+  // State loaded according to SRS specs
   const [profile, setProfile] = useState({
-    fullName: isFarmer ? 'Trần Văn Nông' : 'Nguyễn Văn A',
+    fullName: isFarmer ? 'Trần Văn Nông (HTX Xanh)' : 'Nguyễn Văn A',
     phoneNumber: '0912345678',
     email: isFarmer ? 'farmer@agrisustain.vn' : 'nguyenvana@gmail.com',
     gender: 'Nam',
@@ -23,13 +23,13 @@ export default function ProfileScreen({ fixture = 'retail-customer' }) {
     addressDetail: 'Số 18, Phố Duy Tân',
     rewardPoints: 1250,
     // Farmer specific fields
-    farmName: isFarmer ? 'Hợp tác xã Nông nghiệp Xanh' : '',
+    farmName: isFarmer ? 'Hợp tác xã Nông nghiệp Xanh Lâm Đồng' : '',
     representativeName: isFarmer ? 'Trần Văn Nông' : '',
-    productionScale: isFarmer ? '5.2 ha' : '',
-    cultivationZone: isFarmer ? 'Đồng bằng Sông Hồng' : '',
-    businessLicenseNumber: isFarmer ? 'BL-2026-HN-991' : '',
+    productionScale: isFarmer ? '5.2 ha (Đạt chuẩn VietGAP)' : '',
+    cultivationZone: isFarmer ? 'Lâm Hà - Đà Lạt - Lâm Đồng' : '',
+    businessLicenseNumber: isFarmer ? 'BL-2026-LD-889' : '',
     verificationStatus: 'Approved',
-    reputationScore: 4.85,
+    reputationScore: 4.9,
   });
 
   const [saving, setSaving] = useState(false);
@@ -57,7 +57,7 @@ export default function ProfileScreen({ fixture = 'retail-customer' }) {
     // Simulate API call to PUT /api/profile
     setTimeout(() => {
       setSaving(false);
-      setNotice('MSG13: Cập nhật thông tin hồ sơ thành công!');
+      setNotice('MSG13: Cập nhật thông tin hồ sơ và địa chỉ thành công!');
     }, 400);
   }
 
@@ -72,16 +72,92 @@ export default function ProfileScreen({ fixture = 'retail-customer' }) {
   }
 
   return (
-    <div className="profile-container" style={{ maxWidth: 960, margin: '0 auto' }}>
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">QUẢN LÝ THÔNG TIN TÀI KHOẢN (SCR-11 / UC-AUTH-03)</p>
-          <h1>Hồ sơ cá nhân & Thông tin địa chỉ</h1>
-          <p className="muted">Cập nhật hồ sơ thành viên, thông tin liên hệ và sổ địa chỉ nhận hàng giao hàng.</p>
+    <div style={{ maxWidth: 1120, margin: '0 auto' }}>
+      {/* Top Banner Hero */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #1e6546 0%, #28744f 100%)',
+          borderRadius: 16,
+          padding: '28px 36px',
+          color: '#ffffff',
+          marginBottom: 24,
+          boxShadow: '0 4px 20px rgba(30, 101, 70, 0.12)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 20,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: '50%',
+              background: '#ffffff',
+              color: '#1e6546',
+              fontSize: 26,
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              border: '3px solid #b7e4c7',
+            }}
+          >
+            {initials(profile.fullName)}
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <h1 style={{ color: '#ffffff', margin: 0, fontSize: 24, fontWeight: 800 }}>
+                {profile.fullName}
+              </h1>
+              <span
+                style={{
+                  background: '#d8f3dc',
+                  color: '#1b4332',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: '3px 10px',
+                  borderRadius: 12,
+                }}
+              >
+                {roleName}
+              </span>
+            </div>
+            <p style={{ margin: '6px 0 0', fontSize: 13, color: '#d8f3dc' }}>
+              {profile.email} · SĐT: {profile.phoneNumber}
+            </p>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span className="count">Điểm thưởng: {profile.rewardPoints} điểm</span>
-          <VerificationBadge value={profile.verificationStatus} />
+
+        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              padding: '10px 16px',
+              borderRadius: 12,
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 11, color: '#b7e4c7' }}>ĐIỂM TÍCH LŨY</div>
+            <div style={{ fontSize: 18, fontWeight: 800 }}>⭐ {profile.rewardPoints}</div>
+          </div>
+
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              padding: '10px 16px',
+              borderRadius: 12,
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 11, color: '#b7e4c7' }}>TRẠNG THÁI KYC</div>
+            <div style={{ marginTop: 2 }}>
+              <VerificationBadge value={profile.verificationStatus} />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -89,62 +165,93 @@ export default function ProfileScreen({ fixture = 'retail-customer' }) {
       {notice && <Notice>{notice}</Notice>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 24 }}>
-        {/* Cột trái: Tóm tắt thông tin tài khoản */}
-        <aside className="panel padded" style={{ textAlign: 'center', height: 'fit-content' }}>
-          <div
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: '50%',
-              background: '#e8f1e9',
-              color: '#1e6546',
-              fontSize: 28,
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 16px',
-              border: '2px solid #1e6546',
-            }}
-          >
-            {initials(profile.fullName)}
-          </div>
-          <h3 style={{ margin: '0 0 4px', fontSize: 16 }}>{profile.fullName}</h3>
-          <p className="muted" style={{ fontSize: 12, margin: '0 0 12px' }}>
-            {profile.email}
-          </p>
-          <span className="badge Active" style={{ marginBottom: 20, display: 'inline-block' }}>
-            {roleName}
-          </span>
-
-          <div style={{ borderTop: '1px solid #e0e7df', paddingTop: 16, textAlign: 'left', fontSize: 13 }}>
-            <p style={{ margin: '6px 0' }}>
-              <strong>Trạng thái KYC:</strong> <VerificationBadge value={profile.verificationStatus} />
-            </p>
-            {isFarmer && (
-              <p style={{ margin: '6px 0' }}>
-                <strong>Điểm uy tín:</strong> ⭐ {profile.reputationScore} / 5.0
-              </p>
-            )}
-          </div>
-
-          {profile.verificationStatus === 'NotVerified' && (
+        {/* Navigation / Profile Summary Card */}
+        <aside className="panel padded" style={{ height: 'fit-content' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 14, color: '#1e4834', fontWeight: 700 }}>
+            QUẢN LÝ TÀI KHOẢN
+          </h3>
+          <div style={{ display: 'grid', gap: 8 }}>
             <button
               type="button"
-              className="primary"
-              style={{ width: '100%', marginTop: 16 }}
-              onClick={handleSubmitKyc}
-              disabled={saving}
+              style={{
+                textAlign: 'left',
+                border: 'none',
+                background: '#edf6f0',
+                color: '#1e6546',
+                fontWeight: 700,
+                padding: '10px 14px',
+                borderRadius: 8,
+              }}
             >
-              Gửi duyệt KYC (VO)
+              👤 Thông tin cá nhân & Địa chỉ
             </button>
-          )}
+            <button
+              type="button"
+              style={{
+                textAlign: 'left',
+                border: 'none',
+                background: 'transparent',
+                color: '#52695c',
+                padding: '10px 14px',
+                borderRadius: 8,
+              }}
+              onClick={() => navigate && navigate('/orders')}
+            >
+              📦 Lịch sử đơn mua hàng (SCR-16)
+            </button>
+            <button
+              type="button"
+              style={{
+                textAlign: 'left',
+                border: 'none',
+                background: 'transparent',
+                color: '#52695c',
+                padding: '10px 14px',
+                borderRadius: 8,
+              }}
+              onClick={() => alert('Chức năng bảo mật đang kích hoạt xác thực hai lớp (2FA).')}
+            >
+              🔒 Đổi mật khẩu & Bảo mật
+            </button>
+          </div>
+
+          <div style={{ borderTop: '1px solid #e0e7df', marginTop: 24, paddingTop: 16 }}>
+            <div style={{ fontSize: 12, color: '#668071', marginBottom: 8 }}>
+              <strong>Xác minh KYC:</strong> <VerificationBadge value={profile.verificationStatus} />
+            </div>
+            {isFarmer && (
+              <div style={{ fontSize: 12, color: '#668071', marginBottom: 12 }}>
+                <strong>Điểm uy tín nhà vườn:</strong> ⭐ {profile.reputationScore} / 5.0
+              </div>
+            )}
+
+            {profile.verificationStatus === 'NotVerified' && (
+              <button
+                type="button"
+                className="primary"
+                style={{ width: '100%', marginTop: 8, background: '#1e6546' }}
+                onClick={handleSubmitKyc}
+                disabled={saving}
+              >
+                Gửi thẩm định KYC (UC-VO-01)
+              </button>
+            )}
+          </div>
         </aside>
 
-        {/* Cột phải: Form cập nhật thông tin */}
-        <main className="panel padded">
+        {/* Right Form Card */}
+        <main className="panel padded" style={{ minHeight: 'auto', padding: 32 }}>
           <form onSubmit={handleSave}>
-            <h2>1. Thông tin cơ bản</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 18, color: '#1b4332' }}>1. Thông tin cá nhân cơ bản</h2>
+                <p className="muted" style={{ fontSize: 12 }}>
+                  Thông tin dùng để định danh và liên hệ giao nhận hàng trên hệ thống.
+                </p>
+              </div>
+              <span className="count">Mã thành viên: #MB-{isFarmer ? '8892' : '1024'}</span>
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <Field label="Họ và tên *">
                 <input
@@ -153,36 +260,126 @@ export default function ProfileScreen({ fixture = 'retail-customer' }) {
                   onChange={(e) => handleChange('fullName', e.target.value)}
                   disabled={saving}
                   maxLength={50}
+                  required
                 />
               </Field>
 
-              <Field label="Số điện thoại *">
+              <Field label="Số điện thoại di động *">
                 <input
                   type="tel"
                   value={profile.phoneNumber}
                   onChange={(e) => handleChange('phoneNumber', e.target.value)}
                   disabled={saving}
                   maxLength={10}
+                  required
                 />
               </Field>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 12 }}>
-              <Field label="Email đăng nhập (Cố định)">
-                <input type="email" value={profile.email} readOnly style={{ background: '#f5f7f4' }} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+              <Field label="Địa chỉ Email (Cố định)">
+                <input
+                  type="email"
+                  value={profile.email}
+                  disabled
+                  style={{ background: '#f5f7f5', color: '#6b7d72', cursor: 'not-allowed' }}
+                />
               </Field>
 
-              <Field label="Vai trò hệ thống">
-                <input type="text" value={roleName} readOnly style={{ background: '#f5f7f4' }} />
+              <Field label="Giới tính">
+                <select
+                  value={profile.gender}
+                  onChange={(e) => handleChange('gender', e.target.value)}
+                  disabled={saving}
+                >
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </Field>
+
+              <Field label="Ngày sinh">
+                <input
+                  type="date"
+                  value={profile.birthDate}
+                  onChange={(e) => handleChange('birthDate', e.target.value)}
+                  disabled={saving}
+                />
               </Field>
             </div>
 
-            {/* Thông tin dành riêng cho Farmer nếu có */}
+            {/* Sổ địa chỉ giao hàng */}
+            <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid #e2eae4' }}>
+              <h2 style={{ margin: '0 0 6px', fontSize: 18, color: '#1b4332' }}>2. Sổ địa chỉ nhận hàng mặc định</h2>
+              <p className="muted" style={{ fontSize: 12, marginBottom: 16 }}>
+                Địa chỉ này sẽ được ưu tiên tự động điền khi thanh toán đơn hàng nông sản.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                <Field label="Tỉnh / Thành phố *">
+                  <select
+                    value={profile.provinceCity}
+                    onChange={(e) => handleChange('provinceCity', e.target.value)}
+                    disabled={saving}
+                  >
+                    <option value="Hà Nội">Hà Nội</option>
+                    <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                    <option value="Đà Nẵng">Đà Nẵng</option>
+                    <option value="Lâm Đồng">Lâm Đồng</option>
+                  </select>
+                </Field>
+
+                <Field label="Quận / Huyện *">
+                  <select
+                    value={profile.district}
+                    onChange={(e) => handleChange('district', e.target.value)}
+                    disabled={saving}
+                  >
+                    <option value="Quận Cầu Giấy">Quận Cầu Giấy</option>
+                    <option value="Quận Đống Đa">Quận Đống Đa</option>
+                    <option value="Quận Ba Đình">Quận Ba Đình</option>
+                    <option value="Huyện Lâm Hà">Huyện Lâm Hà</option>
+                  </select>
+                </Field>
+
+                <Field label="Phường / Xã *">
+                  <select
+                    value={profile.ward}
+                    onChange={(e) => handleChange('ward', e.target.value)}
+                    disabled={saving}
+                  >
+                    <option value="Phường Dịch Vọng Hậu">Phường Dịch Vọng Hậu</option>
+                    <option value="Phường Yên Hòa">Phường Yên Hòa</option>
+                    <option value="Xã Đạ Đờn">Xã Đạ Đờn</option>
+                  </select>
+                </Field>
+              </div>
+
+              <Field label="Địa chỉ chi tiết (Số nhà, tên ngõ, phố) *">
+                <input
+                  type="text"
+                  value={profile.addressDetail}
+                  onChange={(e) => handleChange('addressDetail', e.target.value)}
+                  placeholder="Ví dụ: Số 18, Phố Duy Tân"
+                  disabled={saving}
+                  maxLength={150}
+                  required
+                />
+              </Field>
+            </div>
+
+            {/* Thông tin dành riêng cho Farmer */}
             {isFarmer && (
-              <>
-                <h2 style={{ marginTop: 28 }}>2. Thông tin nông trại & Giấy phép</h2>
+              <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid #e2eae4' }}>
+                <h2 style={{ margin: '0 0 6px', fontSize: 18, color: '#1b4332' }}>
+                  3. Thông tin Nông trại & Hợp tác xã (Dành cho Farmer)
+                </h2>
+                <p className="muted" style={{ fontSize: 12, marginBottom: 16 }}>
+                  Dữ liệu dùng để cấp mã truy xuất nguồn gốc nông sản theo quy chuẩn VietGAP.
+                </p>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <Field label="Tên nông trại / HTX *">
+                  <Field label="Tên Nông trại / Hợp tác xã *">
                     <input
                       type="text"
                       value={profile.farmName}
@@ -190,7 +387,28 @@ export default function ProfileScreen({ fixture = 'retail-customer' }) {
                       disabled={saving}
                     />
                   </Field>
-                  <Field label="Số giấy phép kinh doanh">
+
+                  <Field label="Quy mô sản xuất / Diện tích *">
+                    <input
+                      type="text"
+                      value={profile.productionScale}
+                      onChange={(e) => handleChange('productionScale', e.target.value)}
+                      disabled={saving}
+                    />
+                  </Field>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <Field label="Vùng canh tác nông nghiệp">
+                    <input
+                      type="text"
+                      value={profile.cultivationZone}
+                      onChange={(e) => handleChange('cultivationZone', e.target.value)}
+                      disabled={saving}
+                    />
+                  </Field>
+
+                  <Field label="Số ĐKKD / Giấy chứng nhận HTX">
                     <input
                       type="text"
                       value={profile.businessLicenseNumber}
@@ -199,55 +417,24 @@ export default function ProfileScreen({ fixture = 'retail-customer' }) {
                     />
                   </Field>
                 </div>
-              </>
+              </div>
             )}
 
-            {/* Sổ địa chỉ mặc định DeliveryAddress */}
-            <h2 style={{ marginTop: 28 }}>{isFarmer ? '3. Địa chỉ nông trại' : '2. Sổ địa chỉ nhận hàng mặc định'}</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <Field label="Tỉnh / Thành phố *">
-                <select value={profile.provinceCity} onChange={(e) => handleChange('provinceCity', e.target.value)}>
-                  <option value="Hà Nội">Hà Nội</option>
-                  <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                  <option value="Lâm Đồng">Lâm Đồng</option>
-                  <option value="Đồng Tháp">Đồng Tháp</option>
-                </select>
-              </Field>
-
-              <Field label="Quận / Huyện *">
-                <input
-                  type="text"
-                  value={profile.district}
-                  onChange={(e) => handleChange('district', e.target.value)}
-                  disabled={saving}
-                />
-              </Field>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 12 }}>
-              <Field label="Phường / Xã *">
-                <input
-                  type="text"
-                  value={profile.ward}
-                  onChange={(e) => handleChange('ward', e.target.value)}
-                  disabled={saving}
-                />
-              </Field>
-
-              <Field label="Địa chỉ chi tiết (Số nhà, đường) *">
-                <input
-                  type="text"
-                  value={profile.addressDetail}
-                  onChange={(e) => handleChange('addressDetail', e.target.value)}
-                  disabled={saving}
-                />
-              </Field>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 28, paddingTop: 16, borderTop: '1px solid #e0e7df' }}>
-              <button type="button" onClick={() => setNotice(null)}>Hủy bỏ</button>
-              <button type="submit" className="primary" disabled={saving}>
-                {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+            <div style={{ marginTop: 32, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+              <button
+                type="submit"
+                className="primary"
+                style={{
+                  padding: '12px 28px',
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  background: '#1e6546',
+                  boxShadow: '0 4px 12px rgba(30, 101, 70, 0.2)',
+                }}
+                disabled={saving}
+              >
+                {saving ? 'Đang lưu...' : 'Lưu Thay Đổi Hồ Sơ (SCR-11)'}
               </button>
             </div>
           </form>

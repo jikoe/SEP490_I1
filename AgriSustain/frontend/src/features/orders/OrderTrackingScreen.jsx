@@ -3,7 +3,7 @@ import { money, localTime, Notice, Modal, Field } from '../../components/ui/Comm
 
 /**
  * UC-RC-04: Track Retail Order Screen (SCR-16)
- * Includes Order History, Order Details, QR Batch Link, Review & Dispute Actions
+ * Styled with e-commerce agricultural design language matching Figma SCR-TRC-01
  */
 export default function OrderTrackingScreen({ fixture = 'retail-customer', navigate }) {
   const [activeTab, setActiveTab] = useState('All');
@@ -11,6 +11,8 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [complaintModalOpen, setComplaintModalOpen] = useState(false);
+  const [traceModalOpen, setTraceModalOpen] = useState(false);
+  const [selectedBatch, setSelectedBatch] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
   // Mock sample orders conforming to OrderSummaryDto and OrderDetailDto in Class Diagram
@@ -30,15 +32,19 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
         {
           sellerOrderId: 201,
           farmName: 'HTX Nông Nghiệp Lâm Đồng',
+          farmLocation: 'Lâm Hà, Lâm Đồng',
           items: [
             {
               orderItemId: 301,
               productName: 'Bơ Sáp 034 Hữu Cơ (Chứng chỉ VietGAP)',
               harvestBatchCode: 'LOT-BO-2026-08',
+              farmPlot: 'Vườn Đồi A3 - Cây đầu dòng',
+              harvestDate: '15/10/2026',
               quantity: 5,
               unit: 'kg',
               unitPriceSnapshot: 65000,
               isReviewed: false,
+              imageEmoji: '🥑',
             },
           ],
         },
@@ -59,15 +65,19 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
         {
           sellerOrderId: 202,
           farmName: 'Nông trại Xanh Đồng Tháp',
+          farmLocation: 'Cao Lãnh, Đồng Tháp',
           items: [
             {
               orderItemId: 302,
-              productName: 'Xoài Cát Chu Cao Lãnh Đồng Tháp',
+              productName: 'Xoài Cát Chu Cao Lãnh Chuẩn OCOP 4 Sao',
               harvestBatchCode: 'LOT-XOAI-09',
+              farmPlot: 'Khu A Cù Lao Tây',
+              harvestDate: '09/10/2026',
               quantity: 10,
               unit: 'kg',
               unitPriceSnapshot: 45000,
               isReviewed: false,
+              imageEmoji: '🥭',
             },
           ],
         },
@@ -88,15 +98,19 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
         {
           sellerOrderId: 203,
           farmName: 'Nông Hộ Rau Sạch An Phú',
+          farmLocation: 'Thuận Thành, Bắc Ninh',
           items: [
             {
               orderItemId: 303,
-              productName: 'Cải thìa sạch Bắc Ninh',
+              productName: 'Cải Thìa Sinh Thái Bắc Ninh',
               harvestBatchCode: 'BN-20260920-01',
+              farmPlot: 'Nhà màng số 2',
+              harvestDate: '03/10/2026',
               quantity: 4,
               unit: 'kg',
               unitPriceSnapshot: 45000,
               isReviewed: true,
+              imageEmoji: '🥬',
             },
           ],
         },
@@ -104,18 +118,14 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
     },
   ]);
 
-  // Status mapping
-  const statusBadges = {
-    PendingPayment: { label: 'Chờ thanh toán', class: 'Pending' },
-    Paid: { label: 'Đã thanh toán', class: 'Active' },
-    Processing: { label: 'Đang chuẩn bị', class: 'neutral' },
-    Shipping: { label: 'Đang giao hàng', class: 'neutral' },
-    Delivered: { label: 'Đã giao hàng', class: 'Active' },
-    Completed: { label: 'Hoàn thành', class: 'Active' },
-    Cancelled: { label: 'Đã hủy', class: 'Suspended' },
-  };
+  // Tab mapping
+  const tabs = [
+    { key: 'All', label: 'Tất cả đơn', count: orders.length },
+    { key: 'Shipping', label: 'Đang vận chuyển', count: orders.filter((o) => o.orderStatus === 'Shipping').length },
+    { key: 'Completed', label: 'Đã hoàn thành', count: orders.filter((o) => o.orderStatus === 'Completed').length },
+    { key: 'Cancelled', label: 'Đã hủy', count: orders.filter((o) => o.orderStatus === 'Cancelled').length },
+  ];
 
-  // Filter orders by tab and search
   const filteredOrders = orders.filter((order) => {
     if (activeTab === 'Completed' && order.orderStatus !== 'Completed') return false;
     if (activeTab === 'Cancelled' && order.orderStatus !== 'Cancelled') return false;
@@ -130,273 +140,497 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
     return true;
   });
 
+  function openTraceModal(item, farmName) {
+    setSelectedBatch({ ...item, farmName });
+    setTraceModalOpen(true);
+  }
+
   return (
-    <div className="order-tracking-container" style={{ maxWidth: 1040, margin: '0 auto' }}>
-      <div className="section-heading">
+    <div style={{ maxWidth: 1120, margin: '0 auto' }}>
+      {/* Page Heading matching e-commerce portal */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 }}>
         <div>
-          <p className="eyebrow">THEO DÕI ĐƠN HÀNG (SCR-16 / UC-RC-04)</p>
-          <h1>Lịch sử & Theo dõi chi tiết đơn hàng</h1>
-          <p className="muted">Kiểm tra hành trình vận chuyển bưu kiện, tra cứu mã lô sản phẩm và gửi đánh giá.</p>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: '#1e6546' }}>
+            THEO DÕI ĐƠN HÀNG (SCR-16 / UC-RC-04)
+          </span>
+          <h1 style={{ fontSize: 26, margin: '4px 0 6px', color: '#1b4332', fontWeight: 800 }}>
+            Lịch sử & Theo dõi chi tiết đơn hàng
+          </h1>
+          <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+            Tra cứu hành trình vận chuyển bưu kiện, truy xuất mã lô nhật ký nông sản số.
+          </p>
+        </div>
+
+        {/* Thanh tìm kiếm đơn hàng */}
+        <div style={{ width: 320 }}>
+          <input
+            type="text"
+            placeholder="Tìm theo mã đơn (ORD-...) hoặc tên nông sản..."
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            style={{ borderRadius: 20, padding: '9px 16px', background: '#ffffff', border: '1px solid #cce0d2' }}
+          />
         </div>
       </div>
 
       {toastMessage && <Notice>{toastMessage}</Notice>}
 
-      {/* Tabs lọc trạng thái theo SRS 6.3.1 */}
-      <div className="filters" style={{ padding: '0 0 16px', borderBottom: '2px solid #e0e7df' }}>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {['All', 'Shipping', 'Completed', 'Cancelled'].map((tab) => {
-            const labels = {
-              All: 'Tất cả đơn',
-              Shipping: 'Đang giao hàng',
-              Completed: 'Đã hoàn thành',
-              Cancelled: 'Đã hủy',
-            };
-            return (
-              <button
-                key={tab}
-                type="button"
-                className={activeTab === tab ? 'selected' : ''}
-                onClick={() => setActiveTab(tab)}
+      {/* Filter Tabs */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 10,
+          borderBottom: '2px solid #e2eae4',
+          marginBottom: 24,
+          paddingBottom: 2,
+        }}
+      >
+        {tabs.map((tab) => {
+          const isSelected = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              style={{
+                border: 'none',
+                background: isSelected ? '#1e6546' : 'transparent',
+                color: isSelected ? '#ffffff' : '#4d695a',
+                fontWeight: isSelected ? 700 : 500,
+                padding: '9px 18px',
+                borderRadius: '8px 8px 0 0',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <span>{tab.label}</span>
+              <span
+                style={{
+                  background: isSelected ? 'rgba(255,255,255,0.25)' : '#e8f2eb',
+                  color: isSelected ? '#ffffff' : '#2d6a4f',
+                  fontSize: 11,
+                  padding: '2px 7px',
+                  borderRadius: 10,
+                  fontWeight: 700,
+                }}
               >
-                {labels[tab]}
-              </button>
-            );
-          })}
-        </div>
-
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          <input
-            type="search"
-            placeholder="Tìm theo mã đơn hoặc sản phẩm..."
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            style={{ width: 280 }}
-          />
-        </div>
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Danh sách đơn hàng */}
-      <div style={{ marginTop: 24, display: 'grid', gap: 20 }}>
+      {/* Orders List */}
+      <div style={{ display: 'grid', gap: 20 }}>
         {filteredOrders.length === 0 ? (
-          <div className="panel padded" style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <p style={{ fontSize: 16, fontWeight: 600, color: '#617469' }}>
-              MSG23: Bạn chưa có đơn hàng nào trong mục này.
+          <div className="panel padded empty" style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <span style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>📦</span>
+            <strong style={{ fontSize: 16, color: '#2d4d3c' }}>Không tìm thấy đơn hàng nào</strong>
+            <p className="muted" style={{ marginTop: 6 }}>
+              Thử tìm kiếm với từ khóa khác hoặc chuyển tab bộ lọc trạng thái.
             </p>
-            <button
-              type="button"
-              className="primary"
-              style={{ marginTop: 12 }}
-              onClick={() => { if (navigate) navigate('/checkout'); }}
-            >
-              Tiếp tục mua sắm nông sản
-            </button>
           </div>
         ) : (
-          filteredOrders.map((order) => {
-            const badge = statusBadges[order.orderStatus] || { label: order.orderStatus, class: 'neutral' };
-            return (
-              <div key={order.orderId} className="panel padded">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eef1ec', paddingBottom: 12, marginBottom: 16 }}>
-                  <div>
-                    <span style={{ fontWeight: 700, fontSize: 15, color: '#1e6546' }}>#{order.orderCode}</span>
-                    <span className="muted" style={{ fontSize: 12, marginLeft: 12 }}>
-                      Ngày đặt: {localTime(order.orderDate)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className={`badge ${badge.class}`}>{badge.label}</span>
-                  </div>
+          filteredOrders.map((order) => (
+            <div
+              key={order.orderId}
+              className="panel"
+              style={{
+                borderRadius: 14,
+                boxShadow: '0 3px 12px rgba(0,0,0,0.04)',
+                border: '1px solid #dce8e0',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Order Card Header */}
+              <div
+                style={{
+                  padding: '16px 24px',
+                  background: '#f9fbf9',
+                  borderBottom: '1px solid #eef3ef',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 12,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <span style={{ fontWeight: 800, color: '#1b4332', fontSize: 15 }}>
+                    Mã đơn: {order.orderCode}
+                  </span>
+                  <span style={{ fontSize: 12, color: '#6a8274' }}>
+                    Đặt lúc: {localTime(order.orderDate)}
+                  </span>
                 </div>
 
-                {/* Danh sách sản phẩm của các nhà vườn */}
-                {order.sellerOrders.map((so) => (
-                  <div key={so.sellerOrderId} style={{ marginBottom: 14 }}>
-                    <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
-                      🌱 Nhà cung cấp: <strong>{so.farmName}</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span
+                    style={{
+                      background:
+                        order.orderStatus === 'Completed'
+                          ? '#eaf4e9'
+                          : order.orderStatus === 'Shipping'
+                          ? '#e6f3fa'
+                          : '#fbeee9',
+                      color:
+                        order.orderStatus === 'Completed'
+                          ? '#1e6546'
+                          : order.orderStatus === 'Shipping'
+                          ? '#1976d2'
+                          : '#c2533c',
+                      fontWeight: 700,
+                      fontSize: 12,
+                      padding: '4px 12px',
+                      borderRadius: 12,
+                    }}
+                  >
+                    {order.orderStatus === 'Shipping'
+                      ? '🚚 Đang vận chuyển'
+                      : order.orderStatus === 'Completed'
+                      ? '✓ Đã hoàn thành'
+                      : '✕ Đã hủy'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div style={{ padding: '20px 24px' }}>
+                {order.sellerOrders.map((sellerOrder) => (
+                  <div key={sellerOrder.sellerOrderId}>
+                    {/* Farm Shop Title */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                      <span style={{ fontSize: 16 }}>🏡</span>
+                      <strong style={{ fontSize: 14, color: '#1e4834' }}>{sellerOrder.farmName}</strong>
+                      <span style={{ fontSize: 12, color: '#7a9184' }}>({sellerOrder.farmLocation})</span>
                     </div>
 
-                    {so.items.map((item) => (
+                    {sellerOrder.items.map((item) => (
                       <div
                         key={item.orderItemId}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          padding: '8px 0',
-                          borderTop: '1px dashed #f0f2ef',
+                          padding: '12px 16px',
+                          background: '#f8faf8',
+                          borderRadius: 10,
+                          marginBottom: 10,
+                          border: '1px solid #edf3ef',
+                          flexWrap: 'wrap',
+                          gap: 12,
                         }}
                       >
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: 14 }}>{item.productName}</div>
-                          <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
-                            Mã lô thu hoạch: <strong style={{ color: '#1e6546' }}>{item.harvestBatchCode}</strong> | Số lượng: {item.quantity} {item.unit}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                          <div
+                            style={{
+                              width: 52,
+                              height: 52,
+                              borderRadius: 10,
+                              background: '#e9f5ed',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 26,
+                            }}
+                          >
+                            {item.imageEmoji}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: 14, color: '#1f3e2e' }}>
+                              {item.productName}
+                            </div>
+                            <div style={{ fontSize: 12, color: '#688273', marginTop: 4 }}>
+                              Số lượng: <strong>{item.quantity} {item.unit}</strong> × {money(item.unitPriceSnapshot)}
+                            </div>
                           </div>
                         </div>
 
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontWeight: 700, color: '#1e6546' }}>
-                            {money(item.quantity * item.unitPriceSnapshot)}
-                          </span>
+                        {/* Traceability Badge pill */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <button
+                            type="button"
+                            onClick={() => openTraceModal(item, sellerOrder.farmName)}
+                            style={{
+                              border: '1px solid #1e6546',
+                              background: '#edf7f1',
+                              color: '#1e6546',
+                              padding: '6px 12px',
+                              borderRadius: 20,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
+                            title="Bấm để xem thông tin truy xuất nguồn gốc mã lô này"
+                          >
+                            <span>🔍</span>
+                            <span>Mã lô: {item.harvestBatchCode}</span>
+                          </button>
+
+                          <div style={{ textAlign: 'right', minWidth: 100 }}>
+                            <strong style={{ fontSize: 15, color: '#1e6546' }}>
+                              {money(item.quantity * item.unitPriceSnapshot)}
+                            </strong>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ))}
+              </div>
 
-                {/* Tracking & Hàng nút hành động theo Flow của Sequence Diagram */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eef1ec', paddingTop: 14, marginTop: 12 }}>
-                  <div style={{ fontSize: 13 }}>
-                    Tổng thanh toán: <strong style={{ fontSize: 17, color: '#1e6546' }}>{money(order.finalAmount)}</strong>
-                    {order.trackingNumber !== '—' && (
-                      <span className="muted" style={{ marginLeft: 16 }}>
-                        Mã bưu gửi: <strong>{order.trackingNumber}</strong>
-                      </span>
-                    )}
+              {/* Order Card Footer */}
+              <div
+                style={{
+                  padding: '16px 24px',
+                  background: '#ffffff',
+                  borderTop: '1px solid #edf2ed',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 14,
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: 12, color: '#6f8578' }}>
+                    Vận chuyển bởi: <strong>{order.trackingNumber}</strong>
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: 12, color: '#6f8578', marginRight: 6 }}>Tổng thanh toán:</span>
+                    <strong style={{ fontSize: 18, color: '#1e6546' }}>
+                      {money(order.finalAmount)}
+                    </strong>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <button type="button" onClick={() => setSelectedOrder(order)}>
-                      Xem chi tiết đơn
-                    </button>
-
-                    {/* Mở liên kết SCR-TRC-01 truy xuất nguồn gốc lô */}
+                  <div style={{ display: 'flex', gap: 8 }}>
                     <button
                       type="button"
-                      style={{ background: '#e8f1e9', borderColor: '#72e48a', color: '#1e6546', fontWeight: 600 }}
-                      onClick={() => alert(`Chuyển đến màn hình Tra cứu nguồn gốc (SCR-TRC-01) cho mã lô: ${order.sellerOrders[0].items[0].harvestBatchCode}`)}
+                      style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12.5 }}
+                      onClick={() => setSelectedOrder(order)}
                     >
-                      🔍 Tra cứu nguồn gốc
+                      Xem chi tiết
                     </button>
 
-                    {/* UC-RC-05: Đánh giá sản phẩm khi hoàn thành */}
                     {order.orderStatus === 'Completed' && (
                       <button
                         type="button"
-                        style={{ background: '#fff9e6', borderColor: '#c28e00', color: '#c28e00', fontWeight: 600 }}
-                        onClick={() => { setSelectedOrder(order); setReviewModalOpen(true); }}
+                        className="primary"
+                        style={{ padding: '8px 14px', borderRadius: 8, fontSize: 12.5, background: '#1e6546' }}
+                        onClick={() => setReviewModalOpen(true)}
                       >
                         ⭐ Đánh giá (UC-RC-05)
                       </button>
                     )}
 
-                    {/* UC-RC-06: Khiếu nại khi có sự cố */}
-                    {order.orderStatus === 'Completed' && (
-                      <button
-                        type="button"
-                        onClick={() => { setSelectedOrder(order); setComplaintModalOpen(true); }}
-                      >
-                        Khiếu nại (UC-RC-06)
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      style={{ padding: '8px 12px', borderRadius: 8, fontSize: 12, color: '#b23b3b', borderColor: '#ecd3cd' }}
+                      onClick={() => setComplaintModalOpen(true)}
+                    >
+                      Khiếu nại (UC-RC-06)
+                    </button>
                   </div>
                 </div>
               </div>
-            );
-          })
+            </div>
+          ))
         )}
       </div>
 
-      {/* Modal Chi tiết đơn hàng */}
-      {selectedOrder && !reviewModalOpen && !complaintModalOpen && (
-        <Modal title={`Chi tiết đơn hàng #${selectedOrder.orderCode}`} onClose={() => setSelectedOrder(null)}>
-          <div style={{ padding: '10px 0' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      {/* 1. Modal Chi Tiết Đơn Hàng (UC-RC-04 / SCR-16) */}
+      {selectedOrder && (
+        <Modal
+          open={Boolean(selectedOrder)}
+          onClose={() => setSelectedOrder(null)}
+          title={`Chi tiết đơn hàng #${selectedOrder.orderCode}`}
+        >
+          {/* Timeline vận chuyển */}
+          <div style={{ background: '#f5faf7', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+            <h4 style={{ margin: '0 0 14px', fontSize: 13, color: '#1e6546' }}>HÀNH TRÌNH VẬN CHUYỂN</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, textAlign: 'center' }}>
               <div>
-                <p className="muted" style={{ fontSize: 12 }}>THÔNG TIN NGƯỜI NHẬN</p>
-                <p><strong>{selectedOrder.recipientName}</strong> - {selectedOrder.recipientPhone}</p>
-                <p className="muted" style={{ fontSize: 13 }}>{selectedOrder.shippingAddress}</p>
+                <span style={{ fontSize: 20 }}>📝</span>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1e6546', marginTop: 4 }}>Đã đặt hàng</div>
+                <small style={{ color: '#7a8e82' }}>18/10 09:30</small>
               </div>
               <div>
-                <p className="muted" style={{ fontSize: 12 }}>TRẠNG THÁI THANH TOÁN</p>
-                <p>Phương thức: <strong>VietQR / PayOS</strong></p>
-                <p>Trạng thái: <span className="badge Active">{selectedOrder.paymentStatus}</span></p>
+                <span style={{ fontSize: 20 }}>🌾</span>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1e6546', marginTop: 4 }}>Nhà vườn đóng gói</div>
+                <small style={{ color: '#7a8e82' }}>18/10 14:00</small>
+              </div>
+              <div>
+                <span style={{ fontSize: 20 }}>🚚</span>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1976d2', marginTop: 4 }}>Đang giao hàng</div>
+                <small style={{ color: '#7a8e82' }}>Hôm nay 08:00</small>
+              </div>
+              <div>
+                <span style={{ fontSize: 20 }}>🏠</span>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#97a89d', marginTop: 4 }}>Nhận hàng</div>
+                <small style={{ color: '#97a89d' }}>Dự kiến hôm nay</small>
               </div>
             </div>
+          </div>
 
-            <div style={{ borderTop: '1px solid #e0e7df', paddingTop: 14 }}>
-              <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>CHI TIẾT SẢN PHẨM & LÔ THU HOẠCH</p>
-              {selectedOrder.sellerOrders.map((so) =>
-                so.items.map((item) => (
-                  <div key={item.orderItemId} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13 }}>
-                    <span>{item.productName} (Mã lô: <strong>{item.harvestBatchCode}</strong>) × {item.quantity}</span>
-                    <span style={{ fontWeight: 600 }}>{money(item.quantity * item.unitPriceSnapshot)}</span>
-                  </div>
-                ))
-              )}
+          <div style={{ marginBottom: 16 }}>
+            <h4 style={{ margin: '0 0 8px', fontSize: 13, color: '#2d4d3c' }}>ĐỊA CHỈ NHẬN HÀNG</h4>
+            <div style={{ background: '#ffffff', border: '1px solid #e0eae2', borderRadius: 8, padding: 14 }}>
+              <strong>{selectedOrder.recipientName}</strong> · {selectedOrder.recipientPhone}
+              <p style={{ margin: '4px 0 0', color: '#557262', fontSize: 13 }}>
+                {selectedOrder.shippingAddress}
+              </p>
             </div>
+          </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, paddingTop: 14, borderTop: '2px solid #e0e7df' }}>
-              <span style={{ fontSize: 15, fontWeight: 700 }}>Tổng cộng:</span>
-              <span style={{ fontSize: 19, fontWeight: 700, color: '#1e6546' }}>{money(selectedOrder.finalAmount)}</span>
+          <div>
+            <h4 style={{ margin: '0 0 8px', fontSize: 13, color: '#2d4d3c' }}>THÔNG TIN THANH TOÁN</h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 0' }}>
+              <span className="muted">Hình thức thanh toán:</span>
+              <strong>VNPay / Chuyển khoản QR (Đã thanh toán)</strong>
             </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, padding: '8px 0', borderTop: '1px solid #e5ede7', marginTop: 8 }}>
+              <span>Tổng số tiền:</span>
+              <strong style={{ color: '#1e6546', fontSize: 18 }}>{money(selectedOrder.finalAmount)}</strong>
+            </div>
+          </div>
+
+          <div className="modal-actions">
+            <button type="button" onClick={() => setSelectedOrder(null)}>
+              Đóng cửa sổ
+            </button>
           </div>
         </Modal>
       )}
 
-      {/* Modal Đánh giá sản phẩm (UC-RC-05) */}
+      {/* 2. Modal Xem Truy Xuất Nguồn Gốc Lô Thu Hoạch (SCR-TRC-01) */}
+      {traceModalOpen && selectedBatch && (
+        <Modal
+          open={traceModalOpen}
+          onClose={() => setTraceModalOpen(false)}
+          title={`Truy xuất nguồn gốc lô: ${selectedBatch.harvestBatchCode}`}
+        >
+          <div style={{ textAlign: 'center', padding: '10px 0 16px' }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>{selectedBatch.imageEmoji}</div>
+            <h3 style={{ margin: 0, color: '#1b4332' }}>{selectedBatch.productName}</h3>
+            <span style={{ background: '#eaf4e9', color: '#1e6546', padding: '4px 12px', borderRadius: 12, fontSize: 12, fontWeight: 700, display: 'inline-block', marginTop: 6 }}>
+              Mã QR Lô: {selectedBatch.harvestBatchCode}
+            </span>
+          </div>
+
+          <div style={{ background: '#f5faf7', border: '1px solid #dcebe1', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: 10, fontSize: 13 }}>
+              <strong>Nông trại / HTX:</strong> <span>{selectedBatch.farmName}</span>
+              <strong>Vị trí khu đất:</strong> <span>{selectedBatch.farmPlot}</span>
+              <strong>Ngày thu hoạch:</strong> <span>{selectedBatch.harvestDate}</span>
+              <strong>Tiêu chuẩn canh tác:</strong> <span style={{ color: '#1e6546', fontWeight: 700 }}>VietGAP · Không thuốc trừ sâu BVTV</span>
+              <strong>Nhật ký tưới bón:</strong> <span>Đã được Verification Officer thẩm định (UC-VO-01)</span>
+            </div>
+          </div>
+
+          <div className="modal-actions" style={{ justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 12, color: '#688273', alignSelf: 'center' }}>
+              ✓ Thông tin chuỗi cung ứng minh bạch
+            </span>
+            <button
+              type="button"
+              className="primary"
+              style={{ background: '#1e6546' }}
+              onClick={() => {
+                setTraceModalOpen(false);
+                alert(`Chuyển đến trang toàn cảnh Tra cứu nguồn gốc chi tiết (SCR-TRC-01) cho mã lô ${selectedBatch.harvestBatchCode}`);
+              }}
+            >
+              Xem Chi Tiết Đầy Đủ (SCR-TRC-01) →
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* 3. Modal Đánh giá sản phẩm (UC-RC-05) */}
       {reviewModalOpen && (
-        <Modal title="Đánh giá sản phẩm (UC-RC-05)" onClose={() => setReviewModalOpen(false)}>
-          <div style={{ padding: '10px 0' }}>
-            <p>Đánh giá chất lượng nông sản cho đơn hàng <strong>#{selectedOrder?.orderCode}</strong></p>
-            <div style={{ margin: '16px 0' }}>
-              <label className="nav-label" style={{ display: 'block', margin: '0 0 6px' }}>CHỌN SỐ SAO:</label>
-              <div style={{ fontSize: 24, cursor: 'pointer', color: '#e68a00' }}>★★★★★</div>
+        <Modal
+          onClose={() => setReviewModalOpen(false)}
+          title="Đánh giá sản phẩm nông sản (UC-RC-05)"
+        >
+          <p className="muted" style={{ fontSize: 13 }}>
+            Đánh giá của bạn sẽ được gửi tới Content Moderator kiểm duyệt trước khi hiển thị công khai.
+          </p>
+          <div style={{ margin: '16px 0' }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>Mức độ hài lòng:</label>
+            <div style={{ fontSize: 24, cursor: 'pointer', color: '#ffb703' }}>
+              ⭐⭐⭐⭐⭐ <span style={{ fontSize: 14, color: '#334e3d', marginLeft: 8 }}>(5 sao - Rất tươi ngon)</span>
             </div>
-            <Field label="Nhận xét của bạn *">
-              <textarea rows={4} placeholder="Nông sản tươi ngon, đóng gói cẩn thận, giao nhanh..." />
-            </Field>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
-              <button type="button" onClick={() => setReviewModalOpen(false)}>Hủy</button>
-              <button
-                type="button"
-                className="primary"
-                onClick={() => {
-                  setReviewModalOpen(false);
-                  setToastMessage('Gửi đánh giá thành công! Đánh giá sẽ được hiển thị sau khi qua kiểm duyệt của Content Moderator.');
-                }}
-              >
-                Gửi đánh giá
-              </button>
-            </div>
+          </div>
+          <Field label="Nội dung nhận xét chi tiết *">
+            <textarea
+              placeholder="Chia sẻ trải nghiệm về độ tươi, mùi vị, đóng gói của nông sản..."
+              rows={4}
+            />
+          </Field>
+          <div className="modal-actions">
+            <button type="button" onClick={() => setReviewModalOpen(false)}>Hủy</button>
+            <button
+              type="submit"
+              className="primary"
+              style={{ background: '#1e6546' }}
+              onClick={() => {
+                setReviewModalOpen(false);
+                setToastMessage('MSG48: Đánh giá của bạn đã được gửi thành công và đang chờ Content Moderator duyệt (UC-CM-02)!');
+                setTimeout(() => setToastMessage(null), 4000);
+              }}
+            >
+              Gửi đánh giá
+            </button>
           </div>
         </Modal>
       )}
 
-      {/* Modal Khiếu nại đơn hàng (UC-RC-06) */}
+      {/* 4. Modal Khiếu nại (UC-RC-06) */}
       {complaintModalOpen && (
-        <Modal title="Gửi khiếu nại đơn hàng (UC-RC-06)" onClose={() => setComplaintModalOpen(false)}>
-          <div style={{ padding: '10px 0' }}>
-            <p style={{ fontSize: 13 }} className="muted">
-              Áp dụng cho đơn hàng giao trong vòng 48h có sự cố về chất lượng, hư hỏng hoặc sai hàng.
-            </p>
-            <div style={{ marginTop: 12 }}>
-              <Field label="Lý do khiếu nại *">
-                <select>
-                  <option>Sản phẩm bị dập nát, hư hỏng trong quá trình vận chuyển</option>
-                  <option>Sản phẩm không đúng với mô tả / sai loại</option>
-                  <option>Thiếu số lượng / không đúng khối lượng</option>
-                </select>
-              </Field>
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <Field label="Mô tả chi tiết bằng chứng">
-                <textarea rows={3} placeholder="Mô tả tình trạng hàng khi mở hộp..." />
-              </Field>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
-              <button type="button" onClick={() => setComplaintModalOpen(false)}>Hủy</button>
-              <button
-                type="button"
-                className="primary"
-                onClick={() => {
-                  setComplaintModalOpen(false);
-                  setToastMessage('Khiếu nại của bạn đã được tiếp nhận. Đội ngũ Customer Support (UC-CS-01) sẽ xử lý trong 24h.');
-                }}
-              >
-                Gửi khiếu nại
-              </button>
-            </div>
+        <Modal
+          onClose={() => setComplaintModalOpen(false)}
+          title="Gửi yêu cầu khiếu nại đơn hàng (UC-RC-06)"
+        >
+          <p className="muted" style={{ fontSize: 13 }}>
+            Khiếu nại sẽ được chuyển đến bộ phận Chăm sóc khách hàng (Customer Support - UC-CS-01) để xử lý trong 24h.
+          </p>
+          <Field label="Lý do khiếu nại *">
+            <select defaultValue="damaged">
+              <option value="damaged">Hàng hóa bị dập nát / hư hỏng do vận chuyển</option>
+              <option value="missing">Thiếu số lượng so với đơn đặt</option>
+              <option value="wrong_batch">Sản phẩm không đúng mã lô thu hoạch niêm yết</option>
+              <option value="other">Lý do khác</option>
+            </select>
+          </Field>
+          <Field label="Mô tả chi tiết và yêu cầu giải quyết *">
+            <textarea
+              placeholder="Mô tả hiện trạng và cung cấp hình ảnh chụp thực tế sản phẩm..."
+              rows={4}
+            />
+          </Field>
+          <div className="modal-actions">
+            <button type="button" onClick={() => setComplaintModalOpen(false)}>Hủy</button>
+            <button
+              type="submit"
+              className="primary"
+              style={{ background: '#c2533c', borderColor: '#c2533c' }}
+              onClick={() => {
+                setComplaintModalOpen(false);
+                setToastMessage('Yêu cầu khiếu nại đã được ghi nhận và gửi đến Customer Support (UC-CS-01).');
+                setTimeout(() => setToastMessage(null), 4000);
+              }}
+            >
+              Gửi khiếu nại CS
+            </button>
           </div>
         </Modal>
       )}

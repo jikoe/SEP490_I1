@@ -4,6 +4,7 @@ import { Notice, Field, Modal } from '../../components/ui/Common';
 /**
  * UC-AUTH-01: Register RetailCustomer or Farmer Account (SCR-07)
  * Includes UC-AUTH-08: Verify Email OTP modal
+ * Styled with vibrant green agricultural aesthetic matching Figma SCR-TRC-01
  */
 export default function RegisterScreen({ navigate }) {
   const [role, setRole] = useState('RetailCustomer');
@@ -51,7 +52,7 @@ export default function RegisterScreen({ navigate }) {
       return;
     }
     if (!form.agreeTerms) {
-      setError('Bạn cần đồng ý với Điều khoản dịch vụ & Chính sách bảo mật.');
+      setError('Bạn cần đồng ý với Điều khoản dịch vụ & Chính sách bảo mật của AgriSustain.');
       return;
     }
 
@@ -62,7 +63,7 @@ export default function RegisterScreen({ navigate }) {
       setOtpModalOpen(true);
       setOtpDigits(['', '', '', '', '', '']);
       setOtpError(null);
-    }, 500);
+    }, 400);
   }
 
   function handleOtpDigitChange(index, value) {
@@ -99,186 +100,324 @@ export default function RegisterScreen({ navigate }) {
     setTimeout(() => {
       setLoading(false);
       setOtpModalOpen(false);
-      setSuccessNotice('MSG56: Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.');
+      setSuccessNotice('MSG56: Đăng ký tài khoản thành công! Hệ thống đang chuyển đến trang cá nhân của bạn...');
       setTimeout(() => {
-        if (navigate) navigate('/administration/users');
-      }, 2500);
-    }, 600);
+        if (navigate) navigate('/profile');
+      }, 1500);
+    }, 500);
   }
 
   return (
-    <div className="register-container" style={{ maxWidth: 640, margin: '20px auto' }}>
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">XÁC THỰC VÀ TÀI KHOẢN (SCR-07 / UC-AUTH-01)</p>
-          <h1>Đăng ký tài khoản mới</h1>
-          <p className="muted">Tạo tài khoản để tham gia chuỗi cung ứng nông sản an toàn AgriSustain.</p>
+    <div style={{ maxWidth: 680, margin: '20px auto' }}>
+      {/* Header card with agricultural banner */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #1e6546 0%, #2d8a5e 100%)',
+          borderRadius: '16px 16px 0 0',
+          padding: '28px 32px',
+          color: '#ffffff',
+          boxShadow: '0 4px 15px rgba(30, 101, 70, 0.15)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <span style={{ fontSize: 24 }}>🌱</span>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, color: '#a7e4c2' }}>
+            AGRISUSTAIN XÁC THỰC TÀI KHOẢN (SCR-07 / UC-AUTH-01)
+          </span>
         </div>
+        <h1 style={{ color: '#ffffff', fontSize: 26, margin: '0 0 8px', fontWeight: 800 }}>
+          Đăng ký tài khoản mới
+        </h1>
+        <p style={{ margin: 0, fontSize: 13, color: '#d8f3dc', lineHeight: 1.5 }}>
+          Tham gia mạng lưới nông sản minh bạch nguồn gốc từ trang trại đến bàn ăn.
+        </p>
       </div>
 
-      <Notice error={Boolean(error)}>{error}</Notice>
-      {successNotice && <Notice>{successNotice}</Notice>}
+      <div
+        className="panel padded"
+        style={{
+          borderRadius: '0 0 16px 16px',
+          borderTop: 'none',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
+          padding: '32px',
+        }}
+      >
+        <Notice error={Boolean(error)}>{error}</Notice>
+        {successNotice && <Notice>{successNotice}</Notice>}
 
-      <div className="panel padded">
         <form onSubmit={handleRegisterSubmit}>
-          <div style={{ marginBottom: 20 }}>
-            <label className="nav-label" style={{ margin: '0 0 10px', display: 'block' }}>BẠN ĐĂNG KÝ VỚI VAI TRÒ NÀO?</label>
-            <div style={{ display: 'flex', gap: 16 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontWeight: role === 'RetailCustomer' ? 650 : 400 }}>
-                <input
-                  type="radio"
-                  name="userRole"
-                  value="RetailCustomer"
-                  checked={role === 'RetailCustomer'}
-                  onChange={() => setRole('RetailCustomer')}
-                />
-                RetailCustomer (Người mua lẻ)
-              </label>
+          {/* 1. Chọn vai trò tài khoản */}
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e4834', marginBottom: 10 }}>
+              1. BẠN MUỐN THAM GIA VỚI VAI TRÒ NÀO?
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              {/* Card RetailCustomer */}
+              <div
+                onClick={() => setRole('RetailCustomer')}
+                style={{
+                  border: `2px solid ${role === 'RetailCustomer' ? '#1e6546' : '#d7e2da'}`,
+                  borderRadius: 12,
+                  padding: 16,
+                  cursor: 'pointer',
+                  background: role === 'RetailCustomer' ? '#edf6f0' : '#ffffff',
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                  <span style={{ fontSize: 22 }}>🛒</span>
+                  <div>
+                    <strong style={{ fontSize: 14, color: '#1b4332' }}>RetailCustomer</strong>
+                    <div style={{ fontSize: 11, color: '#5b7566' }}>Người mua lẻ / Hộ gia đình</div>
+                  </div>
+                </div>
+                <p style={{ margin: 0, fontSize: 11.5, color: '#688273', lineHeight: 1.4 }}>
+                  Mua sắm nông sản VietGAP, theo dõi đơn hàng và tra cứu nguồn gốc mã lô.
+                </p>
+                {role === 'RetailCustomer' && (
+                  <span style={{ position: 'absolute', top: 10, right: 10, color: '#1e6546', fontWeight: 800 }}>✓</span>
+                )}
+              </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontWeight: role === 'Farmer' ? 650 : 400 }}>
-                <input
-                  type="radio"
-                  name="userRole"
-                  value="Farmer"
-                  checked={role === 'Farmer'}
-                  onChange={() => setRole('Farmer')}
-                />
-                Farmer (Nông dân / Hợp tác xã)
-              </label>
+              {/* Card Farmer */}
+              <div
+                onClick={() => setRole('Farmer')}
+                style={{
+                  border: `2px solid ${role === 'Farmer' ? '#1e6546' : '#d7e2da'}`,
+                  borderRadius: 12,
+                  padding: 16,
+                  cursor: 'pointer',
+                  background: role === 'Farmer' ? '#edf6f0' : '#ffffff',
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                  <span style={{ fontSize: 22 }}>🚜</span>
+                  <div>
+                    <strong style={{ fontSize: 14, color: '#1b4332' }}>Farmer</strong>
+                    <div style={{ fontSize: 11, color: '#5b7566' }}>Nông dân / Hợp tác xã</div>
+                  </div>
+                </div>
+                <p style={{ margin: 0, fontSize: 11.5, color: '#688273', lineHeight: 1.4 }}>
+                  Quản lý nông trại, đăng bán sản phẩm và cập nhật nhật ký canh tác số.
+                </p>
+                {role === 'Farmer' && (
+                  <span style={{ position: 'absolute', top: 10, right: 10, color: '#1e6546', fontWeight: 800 }}>✓</span>
+                )}
+              </div>
             </div>
           </div>
 
-          <Field label="Họ và tên *">
-            <input
-              type="text"
-              placeholder="Ví dụ: Nguyễn Văn A"
-              value={form.fullName}
-              onChange={(e) => handleChange('fullName', e.target.value)}
-              disabled={loading}
-              maxLength={50}
-            />
-          </Field>
+          {/* 2. Thông tin đăng ký */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e4834', marginBottom: 12 }}>
+              2. THÔNG TIN ĐĂNG KÝ TÀI KHOẢN
+            </label>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <Field label="Số điện thoại *">
+            <Field label="Họ và tên đầy đủ *">
               <input
-                type="tel"
-                placeholder="0912345678"
-                value={form.phoneNumber}
-                onChange={(e) => handleChange('phoneNumber', e.target.value)}
-                disabled={loading}
-                maxLength={10}
+                type="text"
+                placeholder={role === 'Farmer' ? 'Ví dụ: Trần Văn Nông (hoặc Tên HTX)' : 'Ví dụ: Nguyễn Văn A'}
+                value={form.fullName}
+                onChange={(e) => handleChange('fullName', e.target.value)}
+                maxLength={50}
+                required
               />
             </Field>
 
-            <Field label="Email *">
-              <input
-                type="email"
-                placeholder="nguyenvana@gmail.com"
-                value={form.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                disabled={loading}
-              />
-            </Field>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <Field label="Số điện thoại di động *">
+                <input
+                  type="tel"
+                  placeholder="0912345678"
+                  value={form.phoneNumber}
+                  onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                  maxLength={10}
+                  required
+                />
+              </Field>
+
+              <Field label="Địa chỉ Email *">
+                <input
+                  type="email"
+                  placeholder="tenban@email.com"
+                  value={form.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  required
+                />
+              </Field>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <Field label="Mật khẩu khởi tạo *">
+                <input
+                  type="password"
+                  placeholder="Tối thiểu 8 ký tự..."
+                  value={form.password}
+                  onChange={(e) => handleChange('password', e.target.value)}
+                  required
+                />
+              </Field>
+
+              <Field label="Xác nhận lại mật khẩu *">
+                <input
+                  type="password"
+                  placeholder="Nhập lại chính xác..."
+                  value={form.confirmPassword}
+                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                  required
+                />
+              </Field>
+            </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <Field label="Mật khẩu *">
-              <input
-                type="password"
-                placeholder="Ít nhất 8 ký tự"
-                value={form.password}
-                onChange={(e) => handleChange('password', e.target.value)}
-                disabled={loading}
-              />
-            </Field>
-
-            <Field label="Xác nhận mật khẩu *">
-              <input
-                type="password"
-                placeholder="Nhập lại mật khẩu"
-                value={form.confirmPassword}
-                onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                disabled={loading}
-              />
-            </Field>
-          </div>
-
-          <div style={{ margin: '18px 0' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+          {/* 3. Checkbox điều khoản */}
+          <div style={{ margin: '20px 0 24px', padding: 14, background: '#f5faf6', borderRadius: 8 }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: 12.5, color: '#334e3d' }}>
               <input
                 type="checkbox"
                 checked={form.agreeTerms}
                 onChange={(e) => handleChange('agreeTerms', e.target.checked)}
-                disabled={loading}
+                style={{ marginTop: 2, accentColor: '#1e6546' }}
               />
-              Tôi đồng ý với <strong>Điều khoản dịch vụ</strong> & <strong>Chính sách bảo mật</strong> của AgriSustain.
+              <span>
+                Tôi đã đọc và đồng ý với{' '}
+                <strong style={{ color: '#1e6546' }}>Điều khoản dịch vụ</strong> và{' '}
+                <strong style={{ color: '#1e6546' }}>Chính sách bảo mật thông tin</strong> của Sàn nông sản AgriSustain.
+              </span>
             </label>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, paddingTop: 16, borderTop: '1px solid #e0e7df' }}>
-            <span className="muted" style={{ fontSize: 13 }}>
-              Đã có tài khoản? <a href="#/login" style={{ color: '#1e6546', fontWeight: 600 }}>Đăng nhập</a>
-            </span>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button type="button" onClick={() => setForm({ fullName: '', phoneNumber: '', email: '', password: '', confirmPassword: '', agreeTerms: false })}>
-                Hủy
-              </button>
-              <button type="submit" className="primary" disabled={loading}>
-                {loading ? 'Đang xử lý...' : 'Đăng ký tài khoản'}
-              </button>
-            </div>
-          </div>
+          {/* Action Button */}
+          <button
+            type="submit"
+            className="primary"
+            style={{
+              width: '100%',
+              padding: '13px 20px',
+              fontSize: 15,
+              fontWeight: 700,
+              borderRadius: 10,
+              background: '#1e6546',
+              boxShadow: '0 4px 12px rgba(30, 101, 70, 0.25)',
+            }}
+            disabled={loading}
+          >
+            {loading ? 'Đang gửi mã xác thực...' : 'Đăng Ký & Nhận Mã OTP Xác Thực →'}
+          </button>
         </form>
+
+        <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#688273' }}>
+          Đã có tài khoản AgriSustain?{' '}
+          <a
+            href="#/profile"
+            onClick={(e) => { e.preventDefault(); navigate('/profile'); }}
+            style={{ color: '#1e6546', fontWeight: 700, textDecoration: 'none' }}
+          >
+            Đăng nhập ngay
+          </a>
+        </div>
       </div>
 
-      {/* UC-AUTH-08: Modal Xác thực Email OTP */}
+      {/* Modal xác thực OTP (UC-AUTH-08) */}
       {otpModalOpen && (
-        <Modal title="Xác thực mã OTP (UC-AUTH-08)" onClose={() => setOtpModalOpen(false)}>
+        <Modal
+          onClose={() => setOtpModalOpen(false)}
+          title="Xác thực OTP qua Email (UC-AUTH-08)"
+        >
           <div style={{ textAlign: 'center', padding: '10px 0 20px' }}>
-            <p style={{ margin: '0 0 12px' }}>
-              Mã xác thực 6 chữ số đã được gửi qua email đến:
-              <br />
-              <strong style={{ color: '#1e6546' }}>{form.email}</strong>
+            <div
+              style={{
+                width: 54,
+                height: 54,
+                borderRadius: '50%',
+                background: '#e8f5ed',
+                color: '#1e6546',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+                fontSize: 24,
+              }}
+            >
+              ✉️
+            </div>
+            <p style={{ margin: '0 0 6px', fontSize: 14, color: '#2d4d3c' }}>
+              Hệ thống AgriSustain vừa gửi mã xác nhận 6 chữ số tới:
             </p>
+            <strong style={{ fontSize: 15, color: '#1e6546' }}>{form.email}</strong>
+          </div>
 
-            <Notice error={Boolean(otpError)}>{otpError}</Notice>
+          {otpError && <Notice error>{otpError}</Notice>}
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, margin: '20px 0' }}>
+          <form onSubmit={handleVerifyOtp}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, margin: '20px 0 24px' }}>
               {otpDigits.map((digit, idx) => (
                 <input
                   key={idx}
                   id={`otp-input-${idx}`}
                   type="text"
+                  inputMode="numeric"
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                   style={{
-                    width: 44,
-                    height: 52,
-                    fontSize: 22,
+                    width: 46,
+                    height: 54,
+                    fontSize: 24,
                     fontWeight: 700,
                     textAlign: 'center',
-                    border: '2px solid #d4dfd7',
-                    borderRadius: 8,
-                    outline: 'none',
+                    borderRadius: 10,
+                    border: '2px solid #2d6a4f',
+                    background: '#f8fbf9',
+                    color: '#1b4332',
                   }}
+                  autoFocus={idx === 0}
                 />
               ))}
             </div>
 
-            <p className="muted" style={{ fontSize: 12, marginBottom: 20 }}>
-              Mã có hiệu lực trong 5 phút (Demo OTP: <strong>123456</strong>)
-            </p>
+            <div style={{ textAlign: 'center', fontSize: 13, color: '#688273', marginBottom: 24 }}>
+              Mã OTP có hiệu lực trong: <strong style={{ color: '#d9534f' }}>04:59</strong>
+              <div style={{ marginTop: 8 }}>
+                Chưa nhận được mã?{' '}
+                <button
+                  type="button"
+                  className="text-button"
+                  style={{ color: '#1e6546', fontWeight: 700 }}
+                  onClick={() => alert('Mã OTP mới đã được gửi lại vào email của bạn.')}
+                >
+                  Gửi lại mã OTP
+                </button>
+              </div>
+            </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-              <button type="button" onClick={() => setOtpModalOpen(false)}>Hủy</button>
-              <button type="button" className="primary" onClick={handleVerifyOtp} disabled={loading}>
-                {loading ? 'Đang xác minh...' : 'Xác minh OTP'}
+            <div className="modal-actions" style={{ justifyContent: 'center', gap: 14 }}>
+              <button
+                type="button"
+                onClick={() => setOtpModalOpen(false)}
+                style={{ padding: '10px 20px', borderRadius: 8 }}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="submit"
+                className="primary"
+                style={{
+                  padding: '10px 28px',
+                  borderRadius: 8,
+                  background: '#1e6546',
+                  fontWeight: 700,
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Đang xác thực...' : 'Xác Nhận & Hoàn Tất'}
               </button>
             </div>
-          </div>
+          </form>
         </Modal>
       )}
     </div>
