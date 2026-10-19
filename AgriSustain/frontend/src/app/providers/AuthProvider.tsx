@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { authApi } from '../../api/authApi';
+import { setSessionToken } from '../../api/client';
 import type { LoginRequest, UserSession } from '../../types/auth';
 
 interface AuthContextValue {
@@ -12,35 +13,33 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-const AUTH_STORAGE_KEY = 'agrisustain-auth';
-
-function readStoredSession(): UserSession | null {
-  const storedValue = sessionStorage.getItem(AUTH_STORAGE_KEY);
-  if (!storedValue) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(storedValue) as UserSession;
-  } catch {
-    sessionStorage.removeItem(AUTH_STORAGE_KEY);
-    return null;
-  }
-}
+const SESSION_FLAG = 'agrisustain-has-session';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedSession = readStoredSession();
-    setUser(savedSession);
-    setIsLoading(false);
+    sessionStorage.removeItem('agrisustain-auth');
+    if (sessionStorage.getItem(SESSION_FLAG) !== 'true') {
+      setIsLoading(false);
+      return;
+    }
+    let active = true;
+    authApi.refresh().then(response => {
+      if (active) persistSession(response as UserSession);
+    }).catch(() => {
+      if (active) sessionStorage.removeItem(SESSION_FLAG);
+    }).finally(() => {
+      if (active) setIsLoading(false);
+    });
+    return () => { active = false; };
   }, []);
 
   const persistSession = (nextUser: UserSession) => {
+    setSessionToken(nextUser.accessToken);
     setUser(nextUser);
-    sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextUser));
+    sessionStorage.setItem(SESSION_FLAG, 'true');
   };
 
   const login = async (email: string, password: string) => {
@@ -73,10 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await authApi.logout();
+      await authApi.logout(user?.accessToken);
     } finally {
       setUser(null);
-      sessionStorage.removeItem(AUTH_STORAGE_KEY);
+      setSessionToken(undefined);
+      sessionStorage.removeItem(SESSION_FLAG);
     }
   };
 

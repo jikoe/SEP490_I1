@@ -101,7 +101,9 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
               </button>
 
               {userMenuOpen && (
-                <div className="user-menu-dropdown" onMouseLeave={() => setUserMenuOpen(false)}>
+            <div className="user-menu-dropdown" onMouseLeave={() => setUserMenuOpen(false)}>
+                  <a href="#/marketplace">Khám phá nông sản</a>
+                  <a href="#/change-password">Đổi mật khẩu</a>
                   <div className="menu-header">
                     <strong>{user.fullName}</strong>
                     <small>{user.email}</small>

@@ -2,23 +2,25 @@ import { test, expect } from '@playwright/test';
 
 test('UC-AUTH-01 & UC-AUTH-08: Register user and verify OTP', async ({ page }) => {
   await page.goto('/#/register');
-  await expect(page.getByText('Đăng ký tài khoản mới')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Đăng ký tài khoản mới', exact: true })).toBeVisible();
 
   const uniqueSuffix = Date.now().toString().slice(-6);
   const email = `dund.test.${uniqueSuffix}@agrisustain.vn`;
   const phone = `0988${uniqueSuffix}`;
 
   await page.getByPlaceholder('Ví dụ: Nguyễn Văn A').fill('Bác Nông Dân');
-  await page.getByPlaceholder('Ví dụ: 0912345678').fill(phone);
-  await page.getByPlaceholder('name@example.com').fill(email);
+  await page.getByLabel('Số điện thoại di động *', { exact: true }).fill(phone);
+  await page.getByLabel('Địa chỉ Email *', { exact: true }).fill(email);
   await page.locator('input[type="password"]').first().fill('Password@123');
   await page.locator('input[type="password"]').nth(1).fill('Password@123');
   await page.locator('input[type="checkbox"]').check();
 
-  await page.getByRole('button', { name: 'Đăng ký ngay' }).click();
+  await page.getByRole('button', { name: /Đăng Ký & Nhận Mã OTP Xác Thực/ }).click();
 
   // OTP modal appears
-  await expect(page.getByText('Nhập mã xác thực email (OTP)')).toBeVisible();
+  await expect(page.getByRole('dialog').getByRole('heading', {
+    name: 'Xác thực OTP qua Email (UC-AUTH-08)', exact: true,
+  })).toBeVisible();
 
   // Fill 6 OTP digits: 123456
   const otpDigits = ['1', '2', '3', '4', '5', '6'];

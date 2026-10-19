@@ -14,9 +14,10 @@ export const authApi = {
       body: JSON.stringify({})
     }),
 
-  logout: async () =>
+  logout: async (token?: string) =>
     apiClient.request<{ message: string }>('/Authentication/logout', {
       method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: JSON.stringify({})
     })
 };

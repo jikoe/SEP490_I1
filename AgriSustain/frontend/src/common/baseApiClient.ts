@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5203/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 class BaseApiClient {
   private buildUrl(path: string) {
@@ -7,12 +7,12 @@ class BaseApiClient {
 
   async request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const response = await fetch(this.buildUrl(path), {
+      ...options,
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...(options.headers ?? {})
-      },
-      ...options
+      }
     });
 
     if (!response.ok) {
