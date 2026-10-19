@@ -10,6 +10,7 @@ import ShoppingCart from '../features/commerce/ShoppingCart';
 import Fulfillment from '../features/commerce/Fulfillment';
 import CheckoutScreen from '../features/orders/CheckoutScreen';
 import '../styles/customer-portal.css';
+import { useAuth } from '../hooks/useAuth';
 
 /**
  * CustomerPortalApp (Sàn Nông Sản Việt - AgriSustain)
@@ -43,14 +44,15 @@ function navigate(path) {
 }
 
 export default function CustomerPortalApp() {
+  const { user: sessionUser, isLoading } = useAuth();
   const [fixture, setFixture] = useState(readPortalFixture);
   const [currentUser, setCurrentUser] = useState(readStoredUser);
   const [route, setRoute] = useState(readPortalRoute);
 
-  const isFarmer = currentUser ? currentUser.role === 'Farmer' : fixture === 'farmer';
-  const roleName = currentUser ? currentUser.role : (isFarmer ? 'Farmer' : 'RetailCustomer');
-  const userName = currentUser ? currentUser.fullName : (isFarmer ? 'Nguyễn Văn Hùng (Farmer)' : 'Lê Thị Mai (RetailBuyer)');
-  const userEmail = currentUser ? currentUser.email : (isFarmer ? 'nongtrai.dalat@gmail.com' : 'khachle.hcm@gmail.com');
+  const isFarmer = sessionUser ? sessionUser.role === 'Farmer' : currentUser ? currentUser.role === 'Farmer' : fixture === 'farmer';
+  const roleName = sessionUser?.role || currentUser?.role || (isFarmer ? 'Farmer' : 'RetailCustomer');
+  const userName = sessionUser ? sessionUser.fullName : currentUser ? currentUser.fullName : (isFarmer ? 'Nguyễn Văn Hùng (Farmer)' : 'Lê Thị Mai (RetailBuyer)');
+  const userEmail = sessionUser ? sessionUser.email : currentUser ? currentUser.email : (isFarmer ? 'nongtrai.dalat@gmail.com' : 'khachle.hcm@gmail.com');
 
   const screen = route === '/register' ? 'register'
     : route === '/profile' ? 'profile'
@@ -97,6 +99,8 @@ export default function CustomerPortalApp() {
     ? [['/farmer/products', 'Quản lý sản phẩm'], ['/farmer/orders', 'Xử lý đơn hàng']]
     : [['/cart', 'Giỏ hàng'], ['/orders', 'Đơn hàng của tôi'], ['/receipts', 'Xác nhận nhận hàng']];
 
+  if (isLoading) return <p role="status">Đang tải phiên đăng nhập...</p>;
+
   return (
     <div className="customer-portal-shell">
       {/* 1. Header ngang đầy đủ danh mục nông sản, logo và tài khoản theo SCR-TRC-01 */}
@@ -108,7 +112,7 @@ export default function CustomerPortalApp() {
           email: userEmail,
           role: roleName,
         }}
-        onSwitchRole={handleSwitchRole}
+        onSwitchRole={sessionUser ? undefined : handleSwitchRole}
       />
 
       {/* 2. Sub-header Slogan & Breadcrumb Bar */}
@@ -128,7 +132,7 @@ export default function CustomerPortalApp() {
 
       {/* 3. Vùng nội dung chính của màn hình */}
       <nav className="commerce commerce-actions" aria-label="Mua bán nông sản">{commerceLinks.map(([path, label]) => <button key={path} className={route === path ? 'primary' : undefined} aria-current={route === path ? 'page' : undefined} onClick={() => navigate(path)}>{label}</button>)}</nav>
-<main key={fixture} className="customer-portal-main">
+<main className="customer-portal-main">
         {screen === 'register' && <RegisterScreen navigate={navigate} />}
         {screen === 'profile' && <ProfileScreen fixture={fixture} navigate={navigate} />}
         {screen === 'orders' && <OrderTrackingScreen fixture={fixture} navigate={navigate} />}

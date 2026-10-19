@@ -1,10 +1,13 @@
 using AgriSustain.Application.Interfaces.Identity;
+using AgriSustain.Application.Interfaces.Repositories;
 using AgriSustain.Application.Interfaces.Services;
 using AgriSustain.Application.Interfaces.UnitOfWork;
+using AgriSustain.Domain.Entities.Accounts;
 using AgriSustain.Infrastructure.Data.Demo;
 using AgriSustain.Infrastructure.Data.Geography;
 using AgriSustain.Infrastructure.Repositories.Demo;
 using AgriSustain.Infrastructure.Repositories.EfCore;
+using AgriSustain.Infrastructure.Security.Authentication;
 using AgriSustain.Infrastructure.UnitOfWork;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,6 +67,17 @@ public static class InfrastructureServiceCollectionExtensions
         }
         services.AddSingleton<IAddressCatalog, VietnamAddressCatalog>();
         services.AddSingleton<ICheckoutPolicy, DemoCheckoutPolicy>();
+        services.AddScoped<IPasswordRepository, PasswordRepository>();
+        services.AddScoped<IMarketplaceRepository, MarketplaceRepository>();
+        services.AddScoped<ICartRepository, CartRepository>();
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        var passwordPolicy = configuration.GetSection("PasswordPolicy")
+            .Get<PasswordPolicy>() ?? new PasswordPolicy();
+        if (passwordPolicy.MinimumLength is < 8 or > 72)
+        {
+            throw new InvalidOperationException("PasswordPolicy:MinimumLength must be 8 to 72.");
+        }
+        services.AddSingleton(passwordPolicy);
         return services;
     }
 }

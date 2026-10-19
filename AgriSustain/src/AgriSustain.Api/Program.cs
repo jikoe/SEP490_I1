@@ -1,3 +1,5 @@
+using System.Text;
+using System.Threading.RateLimiting;
 using AgriSustain.Api;
 using AgriSustain.Api.Middlewares;
 using AgriSustain.Api.Security.Authentication;
@@ -20,7 +22,25 @@ if (builder.Environment.IsDevelopment())
         .AddEnvironmentVariables().AddCommandLine(args);
 }
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        bool marketplace = context.HttpContext.Request.Path.StartsWithSegments("/api/products");
+        var problem = new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState)
+        {
+            Status = 400,
+            Title = marketplace ? "Tiêu chí tìm kiếm hoặc bộ lọc không hợp lệ."
+                : "Dữ liệu đầu vào không hợp lệ.",
+            Extensions =
+            {
+                ["code"] = marketplace ? "MSG40" : "INVALID_INPUT",
+                ["traceId"] = context.HttpContext.TraceIdentifier
+            }
+        };
+        return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(problem);
+    };
+});
 // Database First: the generated context has no connection string or OnConfiguring override.
 // Resolve configuration from DI so isolated test hosts can replace the exact SQL connection.
 builder.Services.AddDbContext<AgriSustainDbContext>((provider, options) =>
@@ -47,8 +67,29 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.IsDevelopment());
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = 429;
+    options.AddPolicy("Credentials", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? context.Connection.RemoteIpAddress?.ToString() ?? "local",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+});
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
-builder.Services.AddAuthentication("Demo")
+builder.Services.AddAccountAuthentication(
+    builder.Configuration, builder.Environment.IsDevelopment());
+builder.Services.AddAuthentication("Session")
+    .AddPolicyScheme("Session", "JWT or local development fixture", options =>
+    {
+        options.ForwardDefaultSelector = context => context.Request.Headers.Authorization
+            .ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                ? "Bearer" : "Demo";
+    })
     .AddScheme<AuthenticationSchemeOptions, DemoAuthenticationHandler>("Demo", _ => { });
 builder.Services.AddAuthorization(options =>
 {
@@ -93,6 +134,7 @@ if (Directory.Exists(frontendPath))
     app.UseStaticFiles(new StaticFileOptions { FileProvider = frontendFiles });
 }
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 app.MapControllers();
 // Liveness/configuration only: not a SQL connectivity or external-provider readiness assertion.

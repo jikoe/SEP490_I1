@@ -11,6 +11,9 @@
     <ProjectReference Include="..\AgriSustain.Infrastructure\AgriSustain.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="Middlewares\" />
     <Folder Include="Properties\" />

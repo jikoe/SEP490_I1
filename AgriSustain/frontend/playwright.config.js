@@ -1,4 +1,7 @@
 import { defineConfig } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
+
+const apiRoot = fileURLToPath(new URL('../src/AgriSustain.Api', import.meta.url));
 
 export default defineConfig({
   testDir: './tests',
@@ -15,8 +18,8 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'dotnet run --project ../src/AgriSustain.Api --configuration Release --no-build --no-restore',
-      env: { Persistence__Mode: 'InMemory' },
+      command: `dotnet "${apiRoot}/bin/Debug/net8.0/AgriSustain.Api.dll" --contentRoot "${apiRoot}" --urls http://127.0.0.1:5179`,
+      env: { Persistence__Mode: 'InMemory', ASPNETCORE_ENVIRONMENT: 'Development' },
       url: 'http://localhost:5179/health',
       reuseExistingServer: false,
       timeout: 45000,

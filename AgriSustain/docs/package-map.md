@@ -1,5 +1,9 @@
 # Ánh xạ Package Diagram Report 4
 
+UC-AUTH-06 và Marketplace dùng các package hiện có: `Services/Authentication`,
+`Services/Marketplace`, DTOs, Validators, Interfaces và `Repositories/EfCore`.
+Xem [API và hướng dẫn triển khai](auth06-marketplace01-02.md); không thay đổi chiều phụ thuộc bốn tầng.
+
 Cập nhật EF Core Database First: [cấu hình và scaffold](ef-core-database-first.md), [đối chiếu màn hình Report 3](three-uc-srs-screen-review.md). Bản EF/UI mới chỉ build và xem nhanh; kết quả test chi tiết cũ chưa xác nhận bản mới.
 
 Bảng này ánh xạ đúng 18 package con của sơ đồ đã chốt. Tên lớp là quy ước cho implementation sau này; bộ khung hiện chưa triển khai nghiệp vụ.

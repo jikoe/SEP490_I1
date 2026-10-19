@@ -1,17 +1,22 @@
-// DEMO-AUTH: fixture is a local testing selector, not a login or access token.
-// Authentication team: replace this header with the in-memory Bearer token supplied
-// by your session provider. Do not retain fixture selection in production builds.
+// Bearer sessions take precedence; legacy Demo selectors are Development-only fixtures.
 /**
- * Sends JSON to the same-origin API with the authorized local fixture selector and optional
+ * Sends JSON to the same-origin API with the current Bearer session or local fixture and optional
  * cancellation. Non-success responses retain the stable error code/status for screen recovery;
- * replace the fixture header with the team session adapter.
+ * keeps authentication credentials out of persistent browser storage.
  */
-export async function request(path, { fixture, signal, method = 'GET', body } = {}) {
+let sessionToken;
+
+export function getSessionToken() { return sessionToken; }
+
+export function setSessionToken(token) { sessionToken = token; }
+
+export async function request(path, { fixture, token = sessionToken, signal, method = 'GET', body } = {}) {
   const response = await fetch(`/api${path}`, {
     method,
     signal,
     headers: {
-      Authorization: `Demo ${fixture}`,
+      ...(token ? { Authorization: `Bearer ${token}` }
+        : fixture ? { Authorization: `Demo ${fixture}` } : {}),
       ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
     },
     body: body === undefined ? undefined : JSON.stringify(body),

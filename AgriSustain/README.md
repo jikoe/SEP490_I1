@@ -7,6 +7,10 @@ Auth, điểm, phí giao và thanh toán vẫn dùng các tích hợp giả lậ
 
 Xem [hướng dẫn ba UC thương mại, schema và kết quả test](docs/commerce-three-uc.md).
 
+Đã tích hợp UC-AUTH-06, UC-MKT-01, UC-MKT-02 và đăng nhập JWT từ bản mới trên ThuongNQ.
+Marketplace: `/#/marketplace`; đổi mật khẩu: `/#/change-password`.
+Xem [API và kiểm thử marketplace/mật khẩu](docs/auth06-marketplace01-02.md).
+
 Cập nhật EF Core Database First: [cấu hình, lệnh scaffold và cách chạy](docs/ef-core-database-first.md).
 Đã lấy 47 entity từ database `AgriSustain`; [đối chiếu giao diện Report 3](docs/three-uc-srs-screen-review.md).
 

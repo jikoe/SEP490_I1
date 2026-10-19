@@ -23,7 +23,7 @@ public sealed class ProductModerationController(ProductService service) : Contro
 
 [ApiController, Route("api/farmer/products"), Authorize(Roles = "Farmer")]
 [RequestSizeLimit(72 * 1024 * 1024)]
-public sealed class ProductsController(ProductService service, ICommerceUnitOfWork unit, ICurrentUser user, IAddressCatalog addresses) : ControllerBase
+public sealed class FarmerProductsController(ProductService service, ICommerceUnitOfWork unit, ICurrentUser user, IAddressCatalog addresses) : ControllerBase
 {
     [HttpGet("provinces")] public IActionResult Provinces() => Ok(addresses.GetProvinces());
     [HttpGet] public async Task<IActionResult> List([FromQuery] CommerceQuery q, CancellationToken ct) => ApiResults.From(await service.GetListAsync(q, ct), HttpContext);

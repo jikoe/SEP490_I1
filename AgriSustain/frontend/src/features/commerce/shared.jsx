@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { request } from '../../api/client';
+import { request, getSessionToken } from '../../api/client';
 import './commerce.css';
 
 export const money = value => new Intl.NumberFormat('vi-VN').format(value || 0) + ' ₫';
@@ -23,7 +23,7 @@ export function AuthenticatedImage({ src, ...props }) {
   useEffect(() => {
     if (!src?.startsWith('/api/product-media/')) return;
     const controller = new AbortController(); let url;
-    fetch(src, { headers: { Authorization: `Demo ${sessionStorage.getItem('agrisustain:demo-fixture') || 'retail-customer'}` }, signal: controller.signal })
+    fetch(src, { headers: { Authorization: getSessionToken() ? `Bearer ${getSessionToken()}` : `Demo ${sessionStorage.getItem('agrisustain:demo-fixture') || 'retail-customer'}` }, signal: controller.signal })
       .then(response => { if (!response.ok) throw new Error('Image unavailable'); return response.blob(); })
       .then(value => { url = URL.createObjectURL(value); setBlob(url); }).catch(() => setBlob(null));
     return () => { controller.abort(); if (url) URL.revokeObjectURL(url); };

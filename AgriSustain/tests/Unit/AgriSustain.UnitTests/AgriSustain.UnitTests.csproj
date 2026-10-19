@@ -6,5 +6,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
     <ProjectReference Include="../../../src/AgriSustain.Domain/AgriSustain.Domain.csproj" />
     <ProjectReference Include="../../../src/AgriSustain.Application/AgriSustain.Application.csproj" />
+    <ProjectReference Include="../../../src/AgriSustain.Infrastructure/AgriSustain.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

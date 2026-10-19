@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('UC-ADM-03: cancel and confirm a status change', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/administration/users');
   const row = page.getByRole('row').filter({ hasText: 'Quản trị viên dự phòng' });
   await expect(row.getByText('Hoạt động', { exact: true })).toBeVisible();
   await expect(row).toContainText(/\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/);
@@ -10,16 +10,16 @@ test('UC-ADM-03: cancel and confirm a status change', async ({ page }) => {
   await expect(row.getByText('Hoạt động', { exact: true })).toBeVisible();
   await row.getByRole('button', { name: 'Tạm ngưng' }).click();
   await page.getByLabel('Lý do *', { exact: true }).fill('Kiểm tra chức năng theo SRS');
-  await page.getByRole('dialog').getByRole('button', { name: 'Xác nhận', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Xác nhận tạm ngưng', exact: true }).click();
   await expect(row.getByText('Tạm ngưng', { exact: true })).toBeVisible();
-  await row.getByRole('button', { name: 'Kích hoạt lại' }).click();
+  await row.getByRole('button', { name: 'Kích hoạt', exact: true }).click();
   await page.getByLabel('Lý do *', { exact: true }).fill('Hoàn tất kiểm tra');
-  await page.getByRole('dialog').getByRole('button', { name: 'Xác nhận', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Xác nhận kích hoạt', exact: true }).click();
   await expect(row.getByText('Hoạt động', { exact: true })).toBeVisible();
 });
 
 test('UC-ADM-05: create, edit and delete an unused category', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/administration/users');
   await page.getByRole('button', { name: 'Danh mục sản phẩm', exact: false }).click();
   await page.getByRole('button', { name: 'Thêm danh mục' }).click();
   const name = `Hạt giống E2E ${Date.now()}`;
@@ -27,7 +27,7 @@ test('UC-ADM-05: create, edit and delete an unused category', async ({ page }) =
   await page.getByRole('button', { name: 'Lưu danh mục' }).click();
   const row = page.getByRole('row').filter({ hasText: name });
   await expect(row).toBeVisible();
-  await row.getByRole('button', { name: 'Sửa', exact: true }).click();
+  await row.getByRole('button', { name: 'Chi tiết / Sửa', exact: true }).click();
   await page.getByLabel('Mô tả', { exact: true }).fill('Danh mục kiểm thử, không gắn sản phẩm.');
   await page.getByRole('button', { name: 'Lưu danh mục' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Đã cập nhật danh mục' })).toBeVisible();
@@ -38,16 +38,18 @@ test('UC-ADM-05: create, edit and delete an unused category', async ({ page }) =
 });
 
 test('UC-RC-02: voucher feedback and successful checkout', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/administration/users');
   await page.getByLabel('Phiên giả lập').selectOption('retail-customer');
   await expect(page.getByText('Cải ngọt hữu cơ', { exact: true })).toBeVisible();
+  await page.getByLabel('Tỉnh / thành phố *', { exact: true }).selectOption('12');
+  await page.getByLabel('Phường / xã *', { exact: true }).selectOption('268');
   await page.getByLabel('Mã voucher', { exact: true }).fill('INVALID');
   await expect(page.getByRole('button', { name: 'Đặt hàng', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Tính lại tổng tiền' }).click();
   await expect(page.getByRole('status')).toContainText('Voucher không hợp lệ');
   await expect(page.getByLabel('Mã voucher', { exact: true })).toHaveValue('');
   await page.getByLabel('Mã voucher', { exact: true }).fill('WELCOME10');
-  await page.getByLabel(/Điểm sử dụng/).fill('100');
+  await page.getByLabel('Điểm muốn sử dụng', { exact: true }).fill('100');
   await page.getByRole('button', { name: 'Tính lại tổng tiền' }).click();
   await expect(page.getByRole('button', { name: 'Đặt hàng', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Đặt hàng', exact: true }).click();
@@ -55,11 +57,11 @@ test('UC-RC-02: voucher feedback and successful checkout', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Đã tạo đơn hàng' })).toBeVisible();
   await expect(page.getByText('Chờ thanh toán', { exact: true })).toBeVisible();
   await expect(page.locator('.success-panel')).toContainText('214.500');
-  await expect(page.locator('.success-panel')).toContainText('Module QR/thanh toán chưa được tích hợp');
+  await expect(page.locator('.success-panel')).toContainText('Tích hợp thanh toán QR đang chờ module');
 });
 
 test('UC-RC-02: unsupported address preserves input and blocks placement', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/administration/users');
   await page.getByLabel('Phiên giả lập').selectOption('other-retail-customer');
   await expect(page.getByText('Cải ngọt hữu cơ', { exact: true })).toBeVisible();
   await page.getByLabel('Tỉnh / thành phố *', { exact: true }).selectOption('13');

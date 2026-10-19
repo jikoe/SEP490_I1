@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './app/CustomerPortalApp';
+import App from './app/RootApp';
 import './styles/app.css';
 import './styles/customer-portal.css';
 

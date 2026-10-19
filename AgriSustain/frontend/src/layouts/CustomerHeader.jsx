@@ -101,7 +101,9 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
               </button>
 
               {userMenuOpen && (
-                <div className="user-menu-dropdown" onMouseLeave={() => setUserMenuOpen(false)}>
+            <div className="user-menu-dropdown" onMouseLeave={() => setUserMenuOpen(false)}>
+                  <a href="#/marketplace">Khám phá nông sản</a>
+                  <a href="#/change-password">Đổi mật khẩu</a>
                   <div className="menu-header">
                     <strong>{user.fullName}</strong>
                     <small>{user.email}</small>
@@ -138,7 +140,7 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
                     ✍ Tạo tài khoản mới (SCR-07)
                   </a>
                   <div className="menu-divider" />
-                  <div className="menu-role-switch">
+                  {onSwitchRole && <div className="menu-role-switch">
                     <span>Vai trò demo:</span>
                     <button
                       type="button"
@@ -154,7 +156,7 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
                     >
                       Nông dân
                     </button>
-                  </div>
+                  </div>}
                 </div>
               )}
             </div>
