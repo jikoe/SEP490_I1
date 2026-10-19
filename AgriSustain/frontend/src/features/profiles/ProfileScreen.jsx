@@ -6,14 +6,22 @@ import { Notice, Field, initials, VerificationBadge } from '../../components/ui/
  * Styled with agricultural design language matching Figma SCR-TRC-01
  */
 export default function ProfileScreen({ fixture = 'retail-customer', navigate }) {
-  const isFarmer = fixture === 'farmer';
+  const storedUser = (() => {
+    try {
+      const raw = sessionStorage.getItem('agrisustain:current-user');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  })();
+
+  const authIdentifier = storedUser?.email || fixture;
+  const isFarmer = storedUser ? storedUser.role === 'Farmer' : fixture === 'farmer';
   const roleName = isFarmer ? 'Farmer' : 'RetailCustomer';
 
   // State loaded according to SRS specs
   const [profile, setProfile] = useState({
-    fullName: isFarmer ? 'Trần Văn Nông (HTX Xanh)' : 'Nguyễn Văn A',
-    phoneNumber: '0912345678',
-    email: isFarmer ? 'farmer@agrisustain.vn' : 'nguyenvana@gmail.com',
+    fullName: storedUser?.fullName || (isFarmer ? 'Nguyễn Văn Hùng' : 'Lê Thị Mai'),
+    phoneNumber: storedUser?.phoneNumber || '0912345678',
+    email: storedUser?.email || (isFarmer ? 'nongtrai.dalat@gmail.com' : 'khachle.hcm@gmail.com'),
     gender: 'Nam',
     birthDate: '1990-05-15',
     // Delivery address (for RetailCustomer)
@@ -23,13 +31,13 @@ export default function ProfileScreen({ fixture = 'retail-customer', navigate })
     addressDetail: 'Số 18, Phố Duy Tân',
     rewardPoints: 1250,
     // Farmer specific fields
-    farmName: isFarmer ? 'Hợp tác xã Nông nghiệp Xanh Lâm Đồng' : '',
-    representativeName: isFarmer ? 'Trần Văn Nông' : '',
+    farmName: isFarmer ? (storedUser?.fullName ? `Trang trại ${storedUser.fullName}` : 'Hợp tác xã Nông nghiệp Xanh') : '',
+    representativeName: storedUser?.fullName || (isFarmer ? 'Nguyễn Văn Hùng' : ''),
     productionScale: isFarmer ? '5.2 ha (Đạt chuẩn VietGAP)' : '',
     cultivationZone: isFarmer ? 'Lâm Hà - Đà Lạt - Lâm Đồng' : '',
     businessLicenseNumber: isFarmer ? 'BL-2026-LD-889' : '',
-    verificationStatus: 'Approved',
-    reputationScore: 4.9,
+    verificationStatus: 'NotSubmitted',
+    reputationScore: 5.0,
   });
 
   const [saving, setSaving] = useState(false);
@@ -42,7 +50,49 @@ export default function ProfileScreen({ fixture = 'retail-customer', navigate })
     setError(null);
   }
 
-  function handleSave(e) {
+  React.useEffect(() => {
+    let cancelled = false;
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile', {
+          headers: { Authorization: `Demo ${authIdentifier}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled && data) {
+            setProfile((prev) => ({
+              ...prev,
+              fullName: data.fullName || prev.fullName,
+              phoneNumber: data.phoneNumber || prev.phoneNumber,
+              email: data.email || prev.email,
+              gender: data.gender || prev.gender,
+              birthDate: data.birthDate || prev.birthDate,
+              rewardPoints: data.rewardPoints ?? prev.rewardPoints,
+              // Address
+              provinceCity: data.deliveryAddress?.provinceCity || prev.provinceCity,
+              district: data.deliveryAddress?.district || prev.district,
+              ward: data.deliveryAddress?.ward || prev.ward,
+              addressDetail: data.deliveryAddress?.addressDetail || prev.addressDetail,
+              // Farmer
+              farmName: data.farmerProfile?.farmName || prev.farmName,
+              representativeName: data.farmerProfile?.representativeName || prev.representativeName,
+              productionScale: data.farmerProfile?.productionScale || prev.productionScale,
+              cultivationZone: data.farmerProfile?.cultivationZone || prev.cultivationZone,
+              businessLicenseNumber: data.farmerProfile?.businessLicenseNumber || prev.businessLicenseNumber,
+              verificationStatus: data.farmerProfile?.verificationStatus || prev.verificationStatus,
+              reputationScore: data.farmerProfile?.reputationScore ?? prev.reputationScore,
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load profile', err);
+      }
+    }
+    loadProfile();
+    return () => { cancelled = true; };
+  }, [authIdentifier, fixture]);
+
+  async function handleSave(e) {
     e.preventDefault();
     if (!profile.fullName.trim()) {
       setError('Họ và tên không được để trống.');
@@ -54,21 +104,96 @@ export default function ProfileScreen({ fixture = 'retail-customer', navigate })
     }
 
     setSaving(true);
-    // Simulate API call to PUT /api/profile
-    setTimeout(() => {
+    setError(null);
+    try {
+      let endpoint = '/api/profile/consumer';
+      let payload = {
+        fullName: profile.fullName.trim(),
+        phoneNumber: profile.phoneNumber.trim(),
+        gender: profile.gender || 'Khác',
+        birthDate: profile.birthDate || null,
+        provinceCity: profile.provinceCity || 'Hà Nội',
+        district: profile.district || 'Cầu Giấy',
+        ward: profile.ward || 'Dịch Vọng Hậu',
+        addressDetail: profile.addressDetail || '123 Đường Mẫu',
+        provinceCode: '01',
+        wardCode: '001',
+      };
+
+      if (isFarmer) {
+        endpoint = '/api/profile/farmer';
+        payload = {
+          fullName: profile.fullName.trim(),
+          phoneNumber: profile.phoneNumber.trim(),
+          farmName: profile.farmName || profile.fullName,
+          representativeName: profile.representativeName || profile.fullName,
+          productionScale: profile.productionScale || '5.0 ha',
+          cultivationZone: profile.cultivationZone || 'Vùng trồng mẫu',
+          businessLicenseNumber: profile.businessLicenseNumber || 'DKKD-12345',
+          address: `${profile.addressDetail || ''}, ${profile.ward || ''}, ${profile.provinceCity || ''}`,
+          provinceCode: '01',
+        };
+      }
+
+      const res = await fetch(endpoint, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Demo ${authIdentifier}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.title || data.message || 'Cập nhật hồ sơ thất bại.');
+      }
+
       setSaving(false);
-      setNotice('MSG13: Cập nhật thông tin hồ sơ và địa chỉ thành công!');
-    }, 400);
+      setNotice('MSG13: Cập nhật thông tin hồ sơ và địa chỉ thành công vào cơ sở dữ liệu!');
+    } catch (err) {
+      setSaving(false);
+      setError(err.message || 'Lỗi khi lưu dữ liệu.');
+    }
   }
 
-  function handleSubmitKyc() {
+  async function handleSubmitKyc() {
     if (!confirm('Bạn có chắc chắn muốn nộp hồ sơ để thẩm định KYC (UC-VO-01) không?')) return;
     setSaving(true);
-    setTimeout(() => {
+    setError(null);
+    try {
+      const res = await fetch('/api/profile/farmer/submit-kyc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Demo ${authIdentifier}`,
+        },
+        body: JSON.stringify({
+          farmName: profile.farmName || profile.fullName,
+          representativeName: profile.representativeName || profile.fullName,
+          address: `${profile.addressDetail || ''}, ${profile.ward || ''}, ${profile.provinceCity || ''}`,
+          provinceCode: '01',
+          businessLicenseNumber: profile.businessLicenseNumber || 'BL-DEMO-2026',
+          productionScale: profile.productionScale || '5.0 ha',
+          cultivationZone: profile.cultivationZone || 'Khu vực thử nghiệm',
+          gpsCoordinates: '10.7769, 106.7009',
+          farmScale: 'Trang trại vừa',
+          standardCertifications: ['VietGAP', 'GlobalGAP'],
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.title || data.message || 'Nộp hồ sơ KYC thất bại.');
+      }
+
       setSaving(false);
       setProfile((prev) => ({ ...prev, verificationStatus: 'Pending' }));
       setNotice('Hồ sơ của bạn đã được chuyển vào hàng đợi duyệt KYC của Verification Officer (UC-VO-01).');
-    }, 400);
+    } catch (err) {
+      setSaving(false);
+      setError(err.message || 'Lỗi khi nộp KYC.');
+    }
   }
 
   return (

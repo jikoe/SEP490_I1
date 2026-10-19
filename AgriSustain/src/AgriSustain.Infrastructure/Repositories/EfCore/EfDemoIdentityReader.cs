@@ -17,24 +17,40 @@ public sealed class EfDemoIdentityReader(AgriSustainDbContext db,
     public async Task<(long Id, string Role)?> FindAsync(string fixture,
         CancellationToken cancellationToken)
     {
-        string? username = fixture switch
+        var now = clock.GetUtcNow().UtcDateTime;
+
+        if (long.TryParse(fixture, out long parsedId))
         {
-            "admin" => "demo3uc_admin",
-            "support" => "demo3uc_support",
-            "retail-customer" => "demo3uc_retail",
-            "other-retail-customer" => "demo3uc_retail_other",
+            var byId = await db.User.AsNoTracking()
+                .Where(u => u.UserId == parsedId && u.Status == "Active" && (u.LockedUntil == null || u.LockedUntil <= now))
+                .Select(u => new { u.UserId, u.Role }).SingleOrDefaultAsync(cancellationToken);
+            if (byId != null) return (byId.UserId, byId.Role);
+        }
+
+        var directUser = await db.User.AsNoTracking()
+            .Where(u => (u.Username == fixture || u.Email == fixture) && u.Status == "Active" && (u.LockedUntil == null || u.LockedUntil <= now))
+            .Select(u => new { u.UserId, u.Role }).FirstOrDefaultAsync(cancellationToken);
+        if (directUser != null) return (directUser.UserId, directUser.Role);
+
+        string? mappedUsername = fixture switch
+        {
+            "admin" => "admin_system",
+            "support" => "staff_support",
+            "retail-customer" => "buyer_retail",
+            "farmer" => "farmer_dalat",
+            "other-retail-customer" => "buyer_retail",
             _ => null
         };
-        if (username is null)
+
+        if (mappedUsername is not null)
         {
-            return null;
+            var seedUser = await db.User.AsNoTracking()
+                .Where(row => (row.Username == mappedUsername || row.Username == $"demo3uc_{fixture}") && row.Status == "Active"
+                    && (row.LockedUntil == null || row.LockedUntil <= now))
+                .Select(row => new { row.UserId, row.Role }).FirstOrDefaultAsync(cancellationToken);
+            if (seedUser is not null) return (seedUser.UserId, seedUser.Role);
         }
-        var now = clock.GetUtcNow().UtcDateTime;
-        var user = await db.User.AsNoTracking()
-            .Where(row => row.Username == username && row.Status == "Active"
-                && (row.LockedUntil == null || row.LockedUntil <= now))
-            .Select(row => new { row.UserId, row.Role }).SingleOrDefaultAsync(cancellationToken);
-        return user is not null && mocks.SessionVersions.GetValueOrDefault(user.UserId) == 0
-            ? (user.UserId, user.Role) : null;
+
+        return null;
     }
 }

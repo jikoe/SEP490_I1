@@ -14,11 +14,13 @@ namespace AgriSustain.Infrastructure.Repositories.EfCore;
 /// The UoW owns the transaction and commit; missing auth/points/retry dependencies stay mocked.
 /// </summary>
 internal sealed partial class EfThreeUcSession :
-    IThreeUcSession, IAccountRepository, ICategoryRepository, ICheckoutRepository
+    IThreeUcSession, IAccountRepository, ICategoryRepository, ICheckoutRepository,
+    IAuthRepository, IProfileRepository, IOrderTrackingRepository
 {
     private readonly AgriSustainDbContext _db;
     private readonly long? _actorId;
     private readonly TimeProvider _clock;
+    private readonly SqlDemoDependencies _dependencies;
     private readonly Dictionary<long, (decimal Available, decimal Reserved)> _readStock = new();
     internal Dictionary<long, int> Points { get; }
     internal Dictionary<(long Buyer, Guid Key), RetailOrder> RequestOrders { get; }
@@ -26,6 +28,9 @@ internal sealed partial class EfThreeUcSession :
     public IAccountRepository Accounts => this;
     public ICategoryRepository Categories => this;
     public ICheckoutRepository Checkout => this;
+    public IAuthRepository Auth => this;
+    public IProfileRepository Profiles => this;
+    public IOrderTrackingRepository Orders => this;
 
     /// <summary>Receives the transaction's DbContext and detached external mock projections.</summary>
     internal EfThreeUcSession(AgriSustainDbContext db, long? actorId,
@@ -34,6 +39,7 @@ internal sealed partial class EfThreeUcSession :
         _db = db;
         _actorId = actorId;
         _clock = clock;
+        _dependencies = dependencies;
         Points = new(dependencies.Points);
         RequestOrders = new(dependencies.RequestOrders);
         SessionVersions = new(dependencies.SessionVersions);

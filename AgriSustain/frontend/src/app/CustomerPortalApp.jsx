@@ -21,7 +21,16 @@ function readPortalRoute() {
 
 function readPortalFixture() {
   const selected = sessionStorage.getItem('agrisustain:demo-fixture');
-  return ['farmer', 'retail-customer'].includes(selected) ? selected : 'retail-customer';
+  return selected || 'retail-customer';
+}
+
+function readStoredUser() {
+  try {
+    const raw = sessionStorage.getItem('agrisustain:current-user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 function navigate(path) {
@@ -30,12 +39,13 @@ function navigate(path) {
 
 export default function CustomerPortalApp() {
   const [fixture, setFixture] = useState(readPortalFixture);
+  const [currentUser, setCurrentUser] = useState(readStoredUser);
   const [route, setRoute] = useState(readPortalRoute);
 
-  const isFarmer = fixture === 'farmer';
-  const roleName = isFarmer ? 'Farmer' : 'RetailCustomer';
-  const userName = isFarmer ? 'Trần Văn Nông (HTX)' : 'Nguyễn Văn A';
-  const userEmail = isFarmer ? 'farmer@agrisustain.vn' : 'nguyenvana@gmail.com';
+  const isFarmer = currentUser ? currentUser.role === 'Farmer' : fixture === 'farmer';
+  const roleName = currentUser ? currentUser.role : (isFarmer ? 'Farmer' : 'RetailCustomer');
+  const userName = currentUser ? currentUser.fullName : (isFarmer ? 'Nguyễn Văn Hùng (Farmer)' : 'Lê Thị Mai (RetailBuyer)');
+  const userEmail = currentUser ? currentUser.email : (isFarmer ? 'nongtrai.dalat@gmail.com' : 'khachle.hcm@gmail.com');
 
   const screen = route === '/register' ? 'register'
     : route === '/profile' ? 'profile'
@@ -43,13 +53,23 @@ export default function CustomerPortalApp() {
 
   useEffect(() => {
     const handleRoute = () => setRoute(readPortalRoute());
+    const handleUser = () => {
+      setCurrentUser(readStoredUser());
+      setFixture(readPortalFixture());
+    };
     window.addEventListener('hashchange', handleRoute);
-    return () => window.removeEventListener('hashchange', handleRoute);
+    window.addEventListener('agrisustain:user-changed', handleUser);
+    return () => {
+      window.removeEventListener('hashchange', handleRoute);
+      window.removeEventListener('agrisustain:user-changed', handleUser);
+    };
   }, []);
 
   function handleSwitchRole(role) {
     const newFixture = role === 'Farmer' ? 'farmer' : 'retail-customer';
+    sessionStorage.removeItem('agrisustain:current-user');
     sessionStorage.setItem('agrisustain:demo-fixture', newFixture);
+    setCurrentUser(null);
     setFixture(newFixture);
   }
 

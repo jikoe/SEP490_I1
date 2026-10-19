@@ -1,12 +1,14 @@
 using AgriSustain.Application.Common;
 using AgriSustain.Application.DTOs.Administration;
 using AgriSustain.Application.DTOs.Orders;
+using AgriSustain.Application.DTOs.Profiles;
 using AgriSustain.Application.Interfaces.Repositories;
 using AgriSustain.Application.Interfaces.UnitOfWork;
 using AgriSustain.Application.Mappings;
 using AgriSustain.Domain.Entities.Accounts;
 using AgriSustain.Domain.Entities.Catalog;
 using AgriSustain.Domain.Entities.Ordering;
+using AgriSustain.Domain.ValueObjects;
 using AgriSustain.Infrastructure.Data.Demo;
 
 namespace AgriSustain.Infrastructure.Repositories.Demo;
@@ -19,11 +21,15 @@ namespace AgriSustain.Infrastructure.Repositories.Demo;
 /// selected-cart removal and audit share a commit boundary.
 /// </summary>
 internal sealed class DemoSession(DemoState state) :
-    IThreeUcSession, IAccountRepository, ICategoryRepository, ICheckoutRepository
+    IThreeUcSession, IAccountRepository, ICategoryRepository, ICheckoutRepository,
+    IAuthRepository, IProfileRepository, IOrderTrackingRepository
 {
     public IAccountRepository Accounts => this;
     public ICategoryRepository Categories => this;
     public ICheckoutRepository Checkout => this;
+    public IAuthRepository Auth => this;
+    public IProfileRepository Profiles => this;
+    public IOrderTrackingRepository Orders => this;
 
     /// <summary>
     /// Reads an account or category only from this unit-of-work working copy; missing IDs yield
@@ -308,4 +314,291 @@ internal sealed class DemoSession(DemoState state) :
         state.Audits.Add(record);
         return Task.CompletedTask;
     }
+
+    #region IAuthRepository
+    public Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken) =>
+        Task.FromResult(state.Accounts.Values.Any(u => string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase)));
+
+    public Task<bool> PhoneExistsAsync(string phone, CancellationToken cancellationToken) =>
+        Task.FromResult(state.Accounts.Values.Any(u => string.Equals(u.Phone, phone, StringComparison.OrdinalIgnoreCase)));
+
+    public Task SavePendingRegistrationAsync(PendingRegistration registration, CancellationToken cancellationToken)
+    {
+        state.PendingRegistrations[registration.Email] = registration;
+        return Task.CompletedTask;
+    }
+
+    public Task<PendingRegistration?> FindPendingRegistrationAsync(string email, CancellationToken cancellationToken)
+    {
+        state.PendingRegistrations.TryGetValue(email, out var registration);
+        return Task.FromResult<PendingRegistration?>(registration);
+    }
+
+    public Task UpdatePendingRegistrationAsync(PendingRegistration registration, CancellationToken cancellationToken)
+    {
+        state.PendingRegistrations[registration.Email] = registration;
+        return Task.CompletedTask;
+    }
+
+    public Task RemovePendingRegistrationAsync(string email, CancellationToken cancellationToken)
+    {
+        state.PendingRegistrations.TryRemove(email, out _);
+        return Task.CompletedTask;
+    }
+
+    public Task<UserAccount> CreateUserAsync(
+        string fullName, string phoneNumber, string email, string passwordHash,
+        string role, DateTimeOffset createdAt, CancellationToken cancellationToken)
+    {
+        long newId = state.Accounts.Count == 0 ? 1 : state.Accounts.Keys.Max() + 1;
+        var user = new UserAccount
+        {
+            Id = newId,
+            Name = fullName,
+            Phone = phoneNumber,
+            Email = email,
+            Role = role,
+            OrganizationName = role == "Farmer" ? fullName : null,
+            VerificationStatus = role == "Farmer" ? "NotSubmitted" : null,
+            CreatedAt = createdAt
+        };
+        state.Accounts[newId] = user;
+        return Task.FromResult(user);
+    }
+
+    public Task CreateFarmerProfileAsync(
+        long userId, string farmName, string representativeName, string address,
+        string provinceCode, string verificationStatus, decimal reputationScore,
+        CancellationToken cancellationToken)
+    {
+        if (state.Accounts.TryGetValue(userId, out var account))
+        {
+            var updated = account.Copy();
+            state.Accounts[userId] = updated;
+        }
+        return Task.CompletedTask;
+    }
+    #endregion
+
+    #region IProfileRepository
+    public Task<UserProfileResponse?> GetProfileAsync(long userId, CancellationToken cancellationToken)
+    {
+        if (!state.Accounts.TryGetValue(userId, out var user))
+        {
+            return Task.FromResult<UserProfileResponse?>(null);
+        }
+
+        var addresses = state.Addresses.GetValueOrDefault(userId, []);
+        var firstAddr = addresses.FirstOrDefault();
+        DeliveryAddressDto? addrDto = firstAddr == null ? null : new DeliveryAddressDto(
+            1, firstAddr.RecipientName, firstAddr.Phone, firstAddr.Province, null,
+            firstAddr.Ward, firstAddr.Detail, firstAddr.ProvinceCode, firstAddr.WardCode, true);
+
+        FarmerProfileDto? farmerDto = user.Role != "Farmer" ? null : new FarmerProfileDto(
+            userId + 1000, user.OrganizationName ?? user.Name, user.Name, "5.0 ha", null,
+            "Lâm Đồng", null, "BL-2026", "Địa chỉ nông trại demo", "01",
+            user.VerificationStatus ?? "Approved", 5.0m, null, null);
+
+        int rewardPoints = state.Points.GetValueOrDefault(userId, 500);
+
+        return Task.FromResult<UserProfileResponse?>(new UserProfileResponse(
+            user.Id, user.Name, user.Phone, user.Email, user.Role, user.Status,
+            null, null, null, rewardPoints, addrDto, farmerDto));
+    }
+
+    public Task UpdateConsumerProfileAsync(
+        long userId, UpdateConsumerProfileRequest request, CancellationToken cancellationToken)
+    {
+        if (state.Accounts.TryGetValue(userId, out var user))
+        {
+            var updated = new UserAccount
+            {
+                Id = user.Id,
+                Name = request.FullName.Trim(),
+                Phone = request.PhoneNumber.Trim(),
+                Email = user.Email,
+                Role = user.Role,
+                OrganizationName = user.OrganizationName,
+                VerificationStatus = user.VerificationStatus,
+                CreatedAt = user.CreatedAt
+            };
+            state.Accounts[userId] = updated;
+
+            if (!string.IsNullOrWhiteSpace(request.AddressDetail))
+            {
+                state.Addresses[userId] = [new AddressSnapshot(
+                    request.FullName, request.PhoneNumber, request.ProvinceCity ?? "Hà Nội",
+                    request.Ward ?? "Dịch Vọng Hậu", request.AddressDetail,
+                    request.ProvinceCode ?? "01", request.WardCode ?? "001")];
+            }
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateFarmerProfileAsync(
+        long userId, UpdateFarmerProfileRequest request, bool requiresReverification, CancellationToken cancellationToken)
+    {
+        if (state.Accounts.TryGetValue(userId, out var user))
+        {
+            var updated = new UserAccount
+            {
+                Id = user.Id,
+                Name = request.FullName.Trim(),
+                Phone = request.PhoneNumber.Trim(),
+                Email = user.Email,
+                Role = user.Role,
+                OrganizationName = request.FarmName.Trim(),
+                VerificationStatus = requiresReverification ? "PendingApproval" : user.VerificationStatus,
+                CreatedAt = user.CreatedAt
+            };
+            state.Accounts[userId] = updated;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task SubmitFarmerKycAsync(long userId, string? notes, CancellationToken cancellationToken)
+    {
+        if (state.Accounts.TryGetValue(userId, out var user))
+        {
+            var updated = new UserAccount
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Phone = user.Phone,
+                Email = user.Email,
+                Role = user.Role,
+                OrganizationName = user.OrganizationName,
+                VerificationStatus = "PendingApproval",
+                CreatedAt = user.CreatedAt
+            };
+            state.Accounts[userId] = updated;
+        }
+        return Task.CompletedTask;
+    }
+    #endregion
+
+    #region IOrderTrackingRepository
+    public Task<PagedResponse<OrderSummaryDto>> GetOrdersByBuyerAsync(
+        long buyerId, OrderQuery query, CancellationToken cancellationToken)
+    {
+        var orders = state.Orders.Values
+            .Where(o => o.BuyerId == buyerId);
+
+        if (!string.IsNullOrWhiteSpace(query.Status) && query.Status != "All")
+        {
+            orders = orders.Where(o => o.Status == query.Status);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            string kw = query.Keyword.Trim();
+            orders = orders.Where(o => o.Code.Contains(kw, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var list = orders.OrderByDescending(o => o.CreatedAt).ToList();
+        var paged = list
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(o => MapDemoOrderSummary(o))
+            .ToList();
+
+        return Task.FromResult(new PagedResponse<OrderSummaryDto>(
+            paged, list.Count, query.Page, query.PageSize));
+    }
+
+    public Task<OrderDetailDto?> GetOrderDetailAsync(
+        long orderId, long? buyerId, CancellationToken cancellationToken)
+    {
+        var order = state.Orders.Values.FirstOrDefault(o => o.Id == orderId);
+        if (order == null || (buyerId.HasValue && order.BuyerId != buyerId.Value))
+        {
+            return Task.FromResult<OrderDetailDto?>(null);
+        }
+
+        var summary = MapDemoOrderSummary(order);
+        var timeline = new List<OrderStatusTimelineDto>
+        {
+            new("Pending", summary.OrderDate, "Đã tạo đơn hàng"),
+            new(summary.OrderStatus, summary.OrderDate.AddHours(2), "Cập nhật trạng thái đơn hàng")
+        };
+
+        return Task.FromResult<OrderDetailDto?>(new OrderDetailDto(
+            summary.OrderId,
+            summary.OrderCode,
+            summary.OrderDate,
+            summary.OrderStatus,
+            summary.PaymentMethod,
+            summary.DeliveryMethod,
+            summary.TotalAmount,
+            summary.DeliveryFee,
+            summary.DiscountAmount,
+            summary.FinalAmount,
+            summary.RecipientName,
+            summary.RecipientPhone,
+            summary.ShippingAddress,
+            summary.TrackingNumber,
+            summary.OrderStatus == "Cancelled" ? "Refunded" : "Paid",
+            summary.OrderDate.AddDays(2),
+            summary.SellerOrders,
+            timeline));
+    }
+
+    public Task<OrderDetailDto?> GetOrderDetailByCodeAsync(
+        string orderCode, long? buyerId, CancellationToken cancellationToken)
+    {
+        var order = state.Orders.Values.FirstOrDefault(o =>
+            string.Equals(o.Code, orderCode, StringComparison.OrdinalIgnoreCase));
+        if (order == null) return Task.FromResult<OrderDetailDto?>(null);
+        return GetOrderDetailAsync(order.Id, buyerId, cancellationToken);
+    }
+
+    public Task MarkOrderNotificationsReadAsync(
+        long orderId, long buyerId, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    private static OrderSummaryDto MapDemoOrderSummary(RetailOrder o)
+    {
+        var sellerGroups = o.Sellers.Select(s =>
+        {
+            string sellerName = o.Lines.FirstOrDefault(l => l.SellerId == s.SellerId)?.SellerName ?? "HTX Nông Nghiệp";
+            return new SellerOrderGroupDto(
+                s.SellerId,
+                s.SellerId,
+                sellerName,
+                "Lâm Đồng",
+                s.Code,
+                o.Status,
+                s.FinalAmount,
+                o.Lines.Where(l => l.SellerId == s.SellerId).Select(l => new OrderItemDetailDto(
+                    l.ProductId,
+                    l.ProductId,
+                    l.ProductName,
+                    l.Quantity,
+                    l.Unit,
+                    l.UnitPrice,
+                    l.Subtotal,
+                    l.Allocations.FirstOrDefault()?.BatchId.ToString() ?? "LOT-DEMO",
+                    DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2)),
+                    "Vườn A",
+                    false,
+                    "🥬")).ToList());
+        }).ToList();
+
+        return new OrderSummaryDto(
+            o.Id,
+            o.Code,
+            o.CreatedAt,
+            o.Status,
+            o.PaymentMethod,
+            o.DeliveryMethod,
+            o.Subtotal,
+            o.DeliveryFee,
+            o.VoucherDiscount + o.PointsDiscount,
+            o.Total,
+            o.Address.RecipientName,
+            o.Address.Phone,
+            $"{o.Address.Detail}, {o.Address.Ward}, {o.Address.Province}",
+            "AGRI-EXPRESS-VN01",
+            sellerGroups);
+    }
+    #endregion
 }

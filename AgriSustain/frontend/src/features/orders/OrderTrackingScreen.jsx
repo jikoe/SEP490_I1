@@ -118,7 +118,27 @@ export default function OrderTrackingScreen({ fixture = 'retail-customer', navig
     },
   ]);
 
-  // Tab mapping
+  React.useEffect(() => {
+    let cancelled = false;
+    async function loadOrders() {
+      try {
+        const res = await fetch('/api/orders', {
+          headers: { Authorization: `Demo ${fixture}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled && data && data.items && data.items.length > 0) {
+            setOrders(data.items);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load orders', err);
+      }
+    }
+    loadOrders();
+    return () => { cancelled = true; };
+  }, [fixture]);
+
   const tabs = [
     { key: 'All', label: 'Tất cả đơn', count: orders.length },
     { key: 'Shipping', label: 'Đang vận chuyển', count: orders.filter((o) => o.orderStatus === 'Shipping').length },

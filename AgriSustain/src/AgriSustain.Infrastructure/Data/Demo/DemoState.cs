@@ -25,6 +25,7 @@ internal sealed class DemoState
     public Dictionary<Guid, CheckoutQuote> Quotes { get; init; } = [];
     public Dictionary<long, RetailOrder> Orders { get; init; } = [];
     public Dictionary<long, AddressSnapshot[]> Addresses { get; init; } = [];
+    public System.Collections.Concurrent.ConcurrentDictionary<string, Application.Interfaces.Repositories.PendingRegistration> PendingRegistrations { get; init; } = new(StringComparer.OrdinalIgnoreCase);
     public List<AuditRecord> Audits { get; init; } = [];
     public long NextCategoryId { get; set; } = 10;
     public long NextOrderId { get; set; } = 1;
@@ -46,6 +47,7 @@ internal sealed class DemoState
         Quotes = new(Quotes),
         Orders = new(Orders),
         Addresses = Addresses.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()),
+        PendingRegistrations = PendingRegistrations,
         Audits = new(Audits),
         NextCategoryId = NextCategoryId,
         NextOrderId = NextOrderId

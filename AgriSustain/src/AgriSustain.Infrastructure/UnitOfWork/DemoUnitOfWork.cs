@@ -87,6 +87,7 @@ public sealed class DemoUnitOfWork :
             "support" => 13,
             "retail-customer" => 10,
             "other-retail-customer" => 11,
+            "farmer" => 20,
             _ => 0
         };
         await _gate.WaitAsync(cancellationToken);

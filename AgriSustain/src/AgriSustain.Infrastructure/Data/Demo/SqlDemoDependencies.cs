@@ -12,6 +12,7 @@ public sealed class SqlDemoDependencies : IDisposable
 {
     internal SemaphoreSlim Gate { get; } = new(1, 1);
     internal ConcurrentDictionary<long, int> SessionVersions { get; } = new();
+    internal ConcurrentDictionary<string, Application.Interfaces.Repositories.PendingRegistration> PendingRegistrations { get; } = new(StringComparer.OrdinalIgnoreCase);
     internal Dictionary<long, int> Points { get; private set; } = [];
     internal Dictionary<(long Buyer, Guid Key), RetailOrder> RequestOrders { get; private set; } = [];
 

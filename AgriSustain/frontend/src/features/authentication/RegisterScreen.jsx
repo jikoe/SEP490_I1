@@ -29,7 +29,7 @@ export default function RegisterScreen({ navigate }) {
     setError(null);
   }
 
-  function handleRegisterSubmit(e) {
+  async function handleRegisterSubmit(e) {
     e.preventDefault();
     if (!form.fullName.trim()) {
       setError('Vui lòng nhập Họ và tên (tối đa 50 ký tự).');
@@ -57,13 +57,36 @@ export default function RegisterScreen({ navigate }) {
     }
 
     setLoading(true);
-    // Simulate API call to POST /api/auth/register (InitiateRegistrationAsync)
-    setTimeout(() => {
+    setError(null);
+    try {
+      const payload = {
+        fullName: form.fullName.trim(),
+        phoneNumber: form.phoneNumber.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+        role: role,
+        agreeTerms: form.agreeTerms,
+      };
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.title || data.message || 'Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.');
+      }
+
       setLoading(false);
       setOtpModalOpen(true);
       setOtpDigits(['', '', '', '', '', '']);
       setOtpError(null);
-    }, 400);
+    } catch (err) {
+      setLoading(false);
+      setError(err.message || 'Không thể kết nối đến máy chủ.');
+    }
   }
 
   function handleOtpDigitChange(index, value) {
@@ -87,7 +110,7 @@ export default function RegisterScreen({ navigate }) {
     }
   }
 
-  function handleVerifyOtp(e) {
+  async function handleVerifyOtp(e) {
     e.preventDefault();
     const code = otpDigits.join('');
     if (code.length < 6) {
@@ -96,15 +119,53 @@ export default function RegisterScreen({ navigate }) {
     }
 
     setLoading(true);
-    // Simulate POST /api/auth/verify-otp (VerifyOtpAndCompleteRegistrationAsync)
-    setTimeout(() => {
+    setOtpError(null);
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email.trim(),
+          otpCode: code,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.title || data.message || 'Mã xác thực OTP không chính xác hoặc đã hết hạn.');
+      }
+
+      const user = await res.json();
+      sessionStorage.setItem('agrisustain:current-user', JSON.stringify(user));
+      sessionStorage.setItem('agrisustain:demo-fixture', user.email);
+      window.dispatchEvent(new Event('agrisustain:user-changed'));
       setLoading(false);
       setOtpModalOpen(false);
-      setSuccessNotice('MSG56: Đăng ký tài khoản thành công! Hệ thống đang chuyển đến trang cá nhân của bạn...');
+      setSuccessNotice(`MSG56: Đăng ký tài khoản thành công cho ${user.fullName || form.fullName}! Thông tin đã được lưu vào cơ sở dữ liệu.`);
       setTimeout(() => {
         if (navigate) navigate('/profile');
-      }, 1500);
-    }, 500);
+      }, 1200);
+    } catch (err) {
+      setLoading(false);
+      setOtpError(err.message || 'Xác thực OTP thất bại.');
+    }
+  }
+
+  async function handleResendOtp() {
+    try {
+      const res = await fetch('/api/auth/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.title || 'Không thể gửi lại mã OTP.');
+      }
+      alert('Mã OTP xác thực mới (123456) đã được gửi lại vào email của bạn.');
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   return (
@@ -381,14 +442,17 @@ export default function RegisterScreen({ navigate }) {
             </div>
 
             <div style={{ textAlign: 'center', fontSize: 13, color: '#688273', marginBottom: 24 }}>
-              Mã OTP có hiệu lực trong: <strong style={{ color: '#d9534f' }}>04:59</strong>
+              <div style={{ marginBottom: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '6px 12px', borderRadius: 8, display: 'inline-block' }}>
+                💡 <span style={{ color: '#166534', fontWeight: 600 }}>Mã OTP thử nghiệm hệ thống:</span> <strong style={{ color: '#15803d', fontSize: 15, letterSpacing: 1.5 }}>123456</strong>
+              </div>
+              <div>Mã OTP có hiệu lực trong: <strong style={{ color: '#d9534f' }}>05:00</strong></div>
               <div style={{ marginTop: 8 }}>
                 Chưa nhận được mã?{' '}
                 <button
                   type="button"
                   className="text-button"
                   style={{ color: '#1e6546', fontWeight: 700 }}
-                  onClick={() => alert('Mã OTP mới đã được gửi lại vào email của bạn.')}
+                  onClick={handleResendOtp}
                 >
                   Gửi lại mã OTP
                 </button>

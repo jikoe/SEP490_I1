@@ -41,6 +41,9 @@ internal sealed class ScenarioSession(
     public IAccountRepository Accounts => inner.Accounts;
     public ICategoryRepository Categories => inner.Categories;
     public ICheckoutRepository Checkout => new ScenarioCheckout(inner.Checkout, changePrice);
+    public IAuthRepository Auth => inner.Auth;
+    public IProfileRepository Profiles => inner.Profiles;
+    public IOrderTrackingRepository Orders => inner.Orders;
     /// <summary>
     /// Optionally throws a controlled audit failure so tests can prove every placement/delete
     /// side effect rolls back; otherwise delegates unchanged.

@@ -18,6 +18,18 @@ public interface IThreeUcSession
     {
         get;
     }
+    IAuthRepository Auth
+    {
+        get;
+    }
+    IProfileRepository Profiles
+    {
+        get;
+    }
+    IOrderTrackingRepository Orders
+    {
+        get;
+    }
     /// <summary>
     /// Stages an audit with the enclosing business transaction. A failed audit must fail the
     /// mutation; target identity must remain readable after a category is physically deleted.
