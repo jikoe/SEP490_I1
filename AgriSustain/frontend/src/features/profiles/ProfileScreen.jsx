@@ -82,6 +82,19 @@ export default function ProfileScreen({ fixture = 'retail-customer', navigate })
               verificationStatus: data.farmerProfile?.verificationStatus || prev.verificationStatus,
               reputationScore: data.farmerProfile?.reputationScore ?? prev.reputationScore,
             }));
+
+            // Sync loaded name to sessionStorage so Header is always in sync with DB
+            try {
+              const raw = sessionStorage.getItem('agrisustain:current-user');
+              if (raw) {
+                const u = JSON.parse(raw);
+                if (data.fullName && u.fullName !== data.fullName) {
+                  u.fullName = data.fullName;
+                  sessionStorage.setItem('agrisustain:current-user', JSON.stringify(u));
+                  window.dispatchEvent(new Event('agrisustain:user-changed'));
+                }
+              }
+            } catch {}
           }
         }
       } catch (err) {
@@ -148,6 +161,17 @@ export default function ProfileScreen({ fixture = 'retail-customer', navigate })
         const data = await res.json().catch(() => ({}));
         throw new Error(data.title || data.message || 'Cập nhật hồ sơ thất bại.');
       }
+
+      // Sync updated name to sessionStorage and notify Header
+      try {
+        const raw = sessionStorage.getItem('agrisustain:current-user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          u.fullName = profile.fullName.trim();
+          sessionStorage.setItem('agrisustain:current-user', JSON.stringify(u));
+          window.dispatchEvent(new Event('agrisustain:user-changed'));
+        }
+      } catch {}
 
       setSaving(false);
       setNotice('MSG13: Cập nhật thông tin hồ sơ và địa chỉ thành công vào cơ sở dữ liệu!');
