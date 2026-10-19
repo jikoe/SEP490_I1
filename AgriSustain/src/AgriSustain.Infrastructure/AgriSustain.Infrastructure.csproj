@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.26" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\AgriSustain.Application\AgriSustain.Application.csproj" />
     <ProjectReference Include="..\AgriSustain.Domain\AgriSustain.Domain.csproj" />
   </ItemGroup>
@@ -25,5 +29,8 @@
     <Folder Include="Payments\PayOS\" />
     <Folder Include="Repositories\" />
     <Folder Include="UnitOfWork\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data/Geography/*.json;Data/Geography/LICENSE;Data/Geography/README.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
