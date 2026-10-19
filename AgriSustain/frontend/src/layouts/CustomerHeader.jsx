@@ -6,9 +6,6 @@ export default function CustomerHeader({ currentRoute, navigate, user, onSwitchR
 
   const navLinks = [
     { label: 'Trang chủ', route: '#/orders' },
-    { label: 'Khám phá nông sản', route: '#/checkout' },
-    { label: 'Nông trại & HTX', route: '#/profile' },
-    { label: 'Truy xuất nguồn gốc', route: '#/orders', highlight: true },
     { label: 'Đơn mua của tôi', route: '#/orders', badge: '3' },
   ];
 
