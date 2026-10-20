@@ -42,7 +42,7 @@ public sealed class CartRepository(
 
         decimal step = await db.Product.Where(p => p.ProductId == productId)
             .Select(p => p.QuantityStep).SingleAsync(cancellationToken);
-        if (!AgriSustain.Application.Services.Commerce.CartService.QuantityValid(outcome.Value, step))
+        if (!AgriSustain.Application.Services.RetailCustomer.CartService.QuantityValid(outcome.Value, step))
             return Result<decimal>.Failure(new Error("MSG167", "Số lượng phải đúng bước bán của sản phẩm."));
 
         var today = DateOnly.FromDateTime(clock.GetUtcNow().ToOffset(TimeSpan.FromHours(7)).Date);

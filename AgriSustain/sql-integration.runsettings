@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <!-- Each SQL test creates and drops its own AgriSustain_ThreeUcTest_* database. -->
+      <THREE_UC_SQL_TESTS>1</THREE_UC_SQL_TESTS>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>

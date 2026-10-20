@@ -1,0 +1,3 @@
+{
+  "dotnet.unitTests.runSettingsPath": "AgriSustain/sql-integration.runsettings"
+}

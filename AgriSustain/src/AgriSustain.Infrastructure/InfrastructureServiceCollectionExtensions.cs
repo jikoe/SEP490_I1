@@ -41,7 +41,7 @@ public static class InfrastructureServiceCollectionExtensions
                 && options.QuoteMinutes > 0 && options.ReservationMinutes > 0,
                 "Invalid demo commerce assumptions.").ValidateOnStart();
         services.AddSingleton<TimeProvider>(TimeProvider.System);
-        services.AddScoped<AgriSustain.Application.Interfaces.Repositories.ICommerceUnitOfWork, CommerceUnitOfWork>();
+        services.AddScoped<AgriSustain.Application.Interfaces.UnitOfWork.IFarmerRetailUnitOfWork, FarmerRetailUnitOfWork>();
         string mode = configuration["Persistence:Mode"] ?? "InMemory";
         if (mode == "SqlServer")
         {

@@ -5,7 +5,9 @@ Ngoài UC-ADM-03, UC-ADM-05 và UC-RC-02, đã bổ sung UC-FAR-03 (quản lý s
 UC-FAR-06 (xử lý đơn hàng) và UC-RC-01 (giỏ hàng), đọc/ghi SQL Server trong Development.
 Auth, điểm, phí giao và thanh toán vẫn dùng các tích hợp giả lập hiện có.
 
-Xem [hướng dẫn ba UC thương mại, schema và kết quả test](docs/commerce-three-uc.md).
+Xem [hướng dẫn feature Farmer/RetailCustomer, schema và kết quả test](docs/farmer-retail-features.md).
+
+Unit Test UC-FAR-03, UC-FAR-06, UC-RC-01 chứa fake dữ liệu trong từng file và không cần database. Chạy `powershell -ExecutionPolicy Bypass -File tools/test-farmer-retail.ps1` từ thư mục AgriSustain (63/63 Passed). SQL integration chỉ chạy khi thêm `-SqlOnly` hoặc `-IncludeSql`.
 
 Đã tích hợp UC-AUTH-06, UC-MKT-01, UC-MKT-02 và đăng nhập JWT từ bản mới trên ThuongNQ.
 Marketplace: `/#/marketplace`; đổi mật khẩu: `/#/change-password`.

@@ -214,7 +214,7 @@ internal sealed class SqlTestDatabase : IAsyncDisposable
         await new SqlCommand($"CREATE DATABASE [{db._name}]", master).ExecuteNonQueryAsync();
         try
         {
-            foreach (string script in new[] { "AgriSustain.sql", "commerce-three-uc.sql", "seed-three-uc-demo.sql" })
+            foreach (string script in new[] { "AgriSustain.sql", "farmer-retail-features.sql", "seed-three-uc-demo.sql" })
             {
                 var start = new ProcessStartInfo("sqlcmd") { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
                 foreach (string argument in new[] { "-S", Server, "-d", db._name, "-E", "-b", "-f65001", "-v", $"TargetDatabase={db._name}", "-i", Path.Combine(root, "database", script) })

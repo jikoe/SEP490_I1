@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import ProductOffers from '../features/commerce/ProductOffers';
+import ProductOffers from '../features/retailCustomer/products/ProductOffers.jsx';
 import RegisterScreen from '../features/authentication/RegisterScreen';
 import ProfileScreen from '../features/profiles/ProfileScreen';
 import OrderTrackingScreen from '../features/orders/OrderTrackingScreen';
 import CustomerHeader from '../layouts/CustomerHeader';
 import CustomerFooter from '../layouts/CustomerFooter';
-import ProductManagement from '../features/commerce/ProductManagement';
-import ShoppingCart from '../features/commerce/ShoppingCart';
-import Fulfillment from '../features/commerce/Fulfillment';
+import ProductManagement from '../features/farmer/products/ProductManagement.jsx';
+import ShoppingCart from '../features/retailCustomer/cart/ShoppingCart.jsx';
+import Fulfillment from '../features/farmer/orders/OrderFulfillment.jsx';
 import CheckoutScreen from '../features/orders/CheckoutScreen';
 import '../styles/customer-portal.css';
 import { useAuth } from '../hooks/useAuth';
